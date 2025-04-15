@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'rest_framework',
     'UrRoadmap',
+    'frontend.apps.FrontendConfig'
 ]
 
 MIDDLEWARE = [
