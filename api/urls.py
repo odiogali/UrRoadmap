@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import ping
 
 router = DefaultRouter()
 router.register(r'departments', views.DepartmentViewSet)
@@ -24,5 +23,4 @@ urlpatterns = [
     path('teaching-staff/', views.TeachingStaffListView.as_view(), name='teaching-staff-list'),
     path('course-textbooks/', views.CourseTextbookListView.as_view(), name='course-textbook-list'),
     path('course-progression/', views.CourseProgressionView.as_view(), name='course-progression'),
-    path('ping/', ping),
 ]

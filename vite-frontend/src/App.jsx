@@ -1,17 +1,28 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Courses from "./pages/Courses";
+import Sidebar from "./components/Sidebar/Sidebar";
+import Courses from "./components/Courses/Courses";
 
 function App() {
   return (
     <Router>
-      <nav style={{ padding: "1rem" }}>
-        <Link to="/">Home</Link> | <Link to="/courses">Courses</Link>
-      </nav>
+      <div style={{ display: "flex", height: "100vh" }}>
+        <Sidebar />
 
-      <Routes>
-        <Route path="/" element={<h1>Welcome to the Degree Tracker</h1>} />
-        <Route path="/courses" element={<Courses />} />
-      </Routes>
+        <div style={{ flex: 1, padding: "1rem" }}>
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <div>
+                  <h1>Welcome to the Degree Tracker</h1>
+                  <p>This would be a dashboard with graphs and cool stuff later.</p>
+                </div>
+              } 
+            />
+            <Route path="/courses" element={<Courses />} />
+          </Routes>
+        </div>
+      </div>
     </Router>
   );
 }
