@@ -98,7 +98,7 @@ class Textbook(models.Model):
     #     return self.title
 
 class Course(models.Model):
-    code = models.CharField(max_length=3, unique=True)
+    code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=100)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='courses')
     textbooks = models.ManyToManyField(Textbook, through='CourseTextbook')
