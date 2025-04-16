@@ -1,0 +1,17 @@
+# Python/Django
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+/static/
+media/
+
+# Node/Vite
+node_modules/
+dist/
+.vite/
+vite-frontend/node_modules/
+vite-frontend/dist/
+
+# VSCode
+.vscode/
