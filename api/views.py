@@ -9,6 +9,10 @@ from .serializers import (DepartmentSerializer, DegreeProgramSerializer,
                          StudentSerializer, GraduateSerializer, 
                          UndergraduateSerializer, EnrollmentSerializer,
                          CourseProgressionSerializer)
+from django.http import JsonResponse
+
+def ping(request):
+    return JsonResponse({"message": "pong!"})
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Department.objects.all()
