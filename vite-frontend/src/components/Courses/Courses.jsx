@@ -9,6 +9,7 @@ function Courses() {
   useEffect(() => {
     axios.get("http://localhost:8000/api/courses/")
       .then(res => {
+        console.log("Fetched courses:", res.data);
         setCourses(res.data);
       })
       .catch(err => {
