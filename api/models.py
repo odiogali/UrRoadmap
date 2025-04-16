@@ -12,7 +12,7 @@ class DegreeProgram(models.Model):
         "Ba": "Bachelors",
         "Ma" : "Masters"
     }
-    degree_type = models.CharField(max_length=2, choices=type)
+    degree_type = models.CharField(max_length=2, choices=type, default="Ba")
 
     # def __str__(self):
     #     return f"{self.name} ({self.type})"
@@ -26,21 +26,21 @@ class Employee(models.Model):
     #     return f"{self.fname} {self.lname}"
 
 class SupportStaff(models.Model):
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, primary_key=True)
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, primary_key=True, default=1)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='support_staff')
     
     # def __str__(self):
     #     return f"{self.employee} - Support Staff"
 
 class AdminStaff(models.Model):
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, primary_key=True)
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, default=1)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='admin_staff')
     
     # def __str__(self):
     #     return f"{self.employee} - Admin Staff"
 
 class Professor(models.Model):
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, primary_key=True)
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, primary_key=True, default=1)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='professors')
     
     # def __str__(self):
@@ -56,7 +56,7 @@ class Student(models.Model):
     fname = models.CharField(max_length=50)
     lname = models.CharField(max_length=50)
     student_type = models.CharField(max_length=1, choices=STUDENT_TYPES)
-    degree_program = models.ForeignKey(DegreeProgram, on_delete=models.SET_NULL, related_name='students')
+    degree_program = models.ForeignKey(DegreeProgram, on_delete=models.SET_NULL, null=True, related_name='students')
     gpa = models.FloatField(null=True, blank=True)
     majors = models.ManyToManyField(Department, related_name='majoring_students')
     minors = models.ManyToManyField(Department, related_name='minoring_students', blank=True)
@@ -117,7 +117,7 @@ class CourseTextbook(models.Model):
 
 class Section(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
-    instructor = models.ForeignKey(TeachingStaff, on_delete=models.SET_NULL, related_name='teaching_sections')
+    instructor = models.ForeignKey(TeachingStaff, on_delete=models.SET_NULL, null=True, related_name='teaching_sections')
     semester = models.CharField(max_length=20)  # e.g., "Fall 2024"
     section_id = models.CharField(max_length=3)  # e.g., "A", "B", "001"
     
@@ -135,7 +135,7 @@ class Enrollment(models.Model):
     
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='enrollments')
-    grade = models.CharField(max_length=2, choices=GRADE_CHOICES, null=False, blank=True)
+    grade = models.CharField(max_length=2, choices=GRADE_CHOICES, null=True)
     
     class Meta:
         unique_together = ('student', 'section')
