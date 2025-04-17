@@ -5,7 +5,6 @@ function Courses() {
   const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState("");
 
-  // Fetch courses from the Django API
   useEffect(() => {
     axios.get("http://localhost:8000/api/courses/")
       .then(res => {
@@ -17,7 +16,6 @@ function Courses() {
       });
   }, []);
 
-  // Filter courses by search string
   const filteredCourses = courses.filter(course =>
     course.name.toLowerCase().includes(search.toLowerCase()) ||
     course.code.toLowerCase().includes(search.toLowerCase())

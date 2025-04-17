@@ -1,28 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Sidebar from "./components/Sidebar/Sidebar";
-import Courses from "./components/Courses/Courses";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./components/Login/Login";
+import StudentDashboard from "./components/Student/StudentDashboard";
+import AdminDashboard from "./components/Admin/AdminDashboard";
 
 function App() {
   return (
     <Router>
-      <div style={{ display: "flex", height: "100vh" }}>
-        <Sidebar />
-
-        <div style={{ flex: 1, padding: "1rem" }}>
-          <Routes>
-            <Route 
-              path="/" 
-              element={
-                <div>
-                  <h1>Welcome to the Degree Tracker</h1>
-                  <p>This would be a dashboard with graphs and cool stuff later.</p>
-                </div>
-              } 
-            />
-            <Route path="/courses" element={<Courses />} />
-          </Routes>
-        </div>
-      </div>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/student/*" element={<StudentDashboard />} />
+        <Route path="/admin/*" element={<AdminDashboard />} />
+      </Routes>
     </Router>
   );
 }

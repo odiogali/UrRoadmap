@@ -8,9 +8,9 @@ function Sidebar() {
 
       <div className="section">
         <p className="section-label">Dash</p>
-        <Link to="/" className="nav-link">🏠 Home</Link>
+        <Link to="/" className="nav-link">🏠 Main</Link>
         <Link to="/courses" className="nav-link">🔍 Courses</Link>
-        <Link to="/progress" className="nav-link">📈 Degree Progression</Link>
+        <Link to="/progress" className="nav-link">📈 Profile</Link>
       </div>
 
       <div className="section">
