@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import Sidebar from "./Sidebar";
+import Sidebar from "./StudentSidebar";
 import Courses from "../Courses/Courses";
 
 function StudentDashboard() {
@@ -9,7 +9,7 @@ function StudentDashboard() {
       <div style={{ flex: 1, padding: "1rem" }}>
         <Routes>
           <Route
-            path="/"
+            index
             element={
               <div>
                 <h1>Welcome to the Degree Tracker</h1>
@@ -17,7 +17,7 @@ function StudentDashboard() {
               </div>
             }
           />
-          <Route path="/courses" element={<Courses />} />
+          <Route path="courses" element={<Courses />} />
         </Routes>
       </div>
     </div>

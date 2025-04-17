@@ -38,3 +38,22 @@
     background-color: #f0f0f0;
   }
   
+  .sidebar-content {
+    flex-grow: 1;
+  }
+  
+  .logout-button {
+    padding: 0.6rem;
+    background-color: #eee;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.2s ease;
+  }
+  
+  .logout-button:hover {
+    background-color: #ddd;
+  }
+  

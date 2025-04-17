@@ -1,0 +1,59 @@
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background-color: #fff;
+  padding: 1rem;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-title {
+  font-weight: bold;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.section {
+  margin-top: 1.1rem;
+}
+
+.section-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.nav-link {
+  display: block;
+  margin: 0.3rem 0;
+  padding: 0.4rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: black;
+}
+
+.nav-link:hover {
+  background-color: #f0f0f0;
+}
+
+.sidebar-content {
+  flex-grow: 1;
+}
+
+/* Logout button styling */
+.logout-button {
+  padding: 0.6rem;
+  background-color: #eee;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #ddd;
+}
