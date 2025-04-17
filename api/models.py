@@ -62,9 +62,9 @@ class Graduate(models.Model):
 
 
 class HasAsAntireq(models.Model):
-    pk = models.CompositePrimaryKey('Antireq_code', 'Course_code')
-    antireq_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Antireq_code')  # Field name made lowercase.
-    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code', related_name='hasasantireq_course_code_set')  # Field name made lowercase.
+    id = models.AutoField(primary_key=True)
+    antireq_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Antireq_code')
+    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code', related_name='hasasantireq_course_code_set')
 
     class Meta:
         managed = False
@@ -73,9 +73,9 @@ class HasAsAntireq(models.Model):
 
 
 class HasAsPreq(models.Model):
-    pk = models.CompositePrimaryKey('Prereq_code', 'Course_code')
-    prereq_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Prereq_code')  # Field name made lowercase.
-    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code', related_name='hasaspreq_course_code_set')  # Field name made lowercase. 
+    id = models.AutoField(primary_key=True)
+    prereq_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Prereq_code')
+    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code', related_name='hasaspreq_course_code_set')
 
     class Meta:
         managed = False
@@ -84,11 +84,11 @@ class HasAsPreq(models.Model):
 
 
 class HasTaken(models.Model):
-    pk = models.CompositePrimaryKey('Course_code', 'Student_id')
-    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code')  # Field name made lowercase.
-    student = models.ForeignKey('Student', models.DO_NOTHING, db_column='Student_id')  # Field name made lowercase.
-    grade = models.CharField(db_column='Grade', max_length=2, blank=True, null=True)  # Field name made lowercase.
-    course_status = models.IntegerField(db_column='Course_status', blank=True, null=True)  # Field name made lowercase.
+    id = models.AutoField(primary_key=True)
+    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code')
+    student = models.ForeignKey('Student', models.DO_NOTHING, db_column='Student_id')
+    grade = models.CharField(db_column='Grade', max_length=2, blank=True, null=True)
+    course_status = models.IntegerField(db_column='Course_status', blank=True, null=True)
 
     class Meta:
         managed = False
@@ -111,9 +111,9 @@ class Professor(models.Model):
 
 
 class Requires(models.Model):
-    pk = models.CompositePrimaryKey('Course_code', 'ISBN')
-    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code')  # Field name made lowercase.
-    isbn = models.ForeignKey('Textbook', models.DO_NOTHING, db_column='ISBN')  # Field name made lowercase.
+    id = models.AutoField(primary_key=True)
+    course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code')
+    isbn = models.ForeignKey('Textbook', models.DO_NOTHING, db_column='ISBN')
 
     class Meta:
         managed = False
@@ -122,11 +122,11 @@ class Requires(models.Model):
 
 
 class Section(models.Model):
-    pk = models.CompositePrimaryKey('SCourse_code', 'S_ID')
-    scourse_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='SCourse_code')  # Field name made lowercase.
-    s_id = models.IntegerField(db_column='S_ID')  # Field name made lowercase.
-    semester = models.CharField(db_column='Semester', max_length=6, blank=True, null=True)  # Field name made lowercase.
-    instructor = models.ForeignKey('TeachingStaff', models.DO_NOTHING, db_column='Instructor_id', blank=True, null=True)  # Field name made lowercase.
+    id = models.AutoField(primary_key=True)
+    scourse_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='SCourse_code')
+    s_id = models.IntegerField(db_column='S_ID')
+    semester = models.CharField(db_column='Semester', max_length=6, blank=True, null=True)
+    instructor = models.ForeignKey('TeachingStaff', models.DO_NOTHING, db_column='Instructor_id', blank=True, null=True)
 
     class Meta:
         managed = False
@@ -187,9 +187,9 @@ class Undergraduate(models.Model):
 
 
 class WorksFor(models.Model):
-    pk = models.CompositePrimaryKey('EID', 'Dno')
-    eid = models.ForeignKey(SupportStaff, models.DO_NOTHING, db_column='EID')  # Field name made lowercase.
-    dno = models.ForeignKey(Department, models.DO_NOTHING, db_column='Dno')  # Field name made lowercase.
+    id = models.AutoField(primary_key=True)
+    eid = models.ForeignKey(SupportStaff, models.DO_NOTHING, db_column='EID')
+    dno = models.ForeignKey(Department, models.DO_NOTHING, db_column='Dno')
 
     class Meta:
         managed = False
