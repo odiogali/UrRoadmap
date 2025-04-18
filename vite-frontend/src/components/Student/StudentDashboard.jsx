@@ -1,23 +1,26 @@
+import StudentNav from "./StudentNav";
 import { Routes, Route } from "react-router-dom";
-import Sidebar from "./StudentSidebar";
 import Courses from "../Courses/Courses";
 
 function StudentDashboard() {
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <Sidebar />
-      <div style={{ flex: 1, padding: "1rem" }}>
+    <div>
+      <StudentNav />
+      <div style={{ padding: "2rem" }}>
         <Routes>
           <Route
-            index
+            path="/"
             element={
               <div>
                 <h1>Welcome to the Degree Tracker</h1>
-                <p>This would be a dashboard with graphs and cool stuff later.</p>
+                <p>
+                  This would be a dashboard with graphs and cool stuff later.
+                </p>
               </div>
             }
           />
-          <Route path="courses" element={<Courses />} />
+          <Route path="/courses" element={<Courses />} />
+          {/* Add more routes as needed */}
         </Routes>
       </div>
     </div>

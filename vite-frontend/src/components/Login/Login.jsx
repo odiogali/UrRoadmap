@@ -19,7 +19,7 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-content">
-        <h1 className="login-title">Degree Tracker</h1>
+        <h1 className="login-title">Your Roadmap</h1>
 
         <form className="login-form" onSubmit={handleLogin}>
           <h2>Log In</h2>

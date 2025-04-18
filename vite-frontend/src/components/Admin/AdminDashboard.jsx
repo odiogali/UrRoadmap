@@ -1,10 +1,10 @@
 import { Routes, Route } from "react-router-dom";
-import AdminSidebar from "./AdminSidebar";
+import AdminNav from "./AdminNav";
 
 function AdminDashboard() {
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <AdminSidebar />
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      <AdminNav />
 
       <div style={{ flex: 1, padding: "1rem" }}>
         <Routes>
@@ -13,7 +13,10 @@ function AdminDashboard() {
             element={
               <div>
                 <h1>Welcome Admin 👋</h1>
-                <p>This is your dashboard. You can manage students, faculty, and courses from here.</p>
+                <p>
+                  This is your dashboard. You can manage students, faculty, and
+                  courses from here.
+                </p>
               </div>
             }
           />
@@ -37,6 +40,15 @@ function AdminDashboard() {
           />
           <Route
             path="courses"
+            element={
+              <div>
+                <h2>View Courses</h2>
+                <p>Browse the course catalog.</p>
+              </div>
+            }
+          />
+          <Route
+            path="manage-courses"
             element={
               <div>
                 <h2>Manage Courses</h2>

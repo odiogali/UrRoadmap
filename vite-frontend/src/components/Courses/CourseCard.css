@@ -1,0 +1,33 @@
+.course-card {
+    background-color: #fff;
+    border: 1px solid #eee;
+    padding: 1.25rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    transition: 0.2s ease;
+    font-size: 0.95rem;
+  }
+  
+  .course-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  
+  .course-title {
+    font-weight: 600;
+    margin-top: 0.25rem;
+    color: #333;
+  }
+  
+  .course-description {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0.5rem 0;
+  }
+  
+  .instructor, .prereqs {
+    font-size: 0.8rem;
+    color: #444;
+    margin-top: 0.5rem;
+  }
+  

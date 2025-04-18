@@ -1,55 +1,60 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
+import CourseCard from "./CourseCard";
+import "./Courses.css";
+
+//dummy courses so i dont fuck up the backend again lol
+const dummyCourses = [
+  {
+    id: 1,
+    code: "CPSC 471",
+    title: "Database Systems",
+    description: "Intro to relational databases and SQL.",
+    instructor: "Dr. Smith",
+    prerequisites: ["CPSC 319", "CPSC 331"],
+  },
+  {
+    id: 2,
+    code: "CPSC 457",
+    title: "Operating Systems",
+    description: "Modern OS concepts like concurrency.",
+    instructor: "Dr. Lee",
+    prerequisites: ["CPSC 313"],
+  },
+  {
+    id: 3,
+    code: "CPSC 329",
+    title: "Cybersecurity",
+    description: "Computer and network security basics.",
+    instructor: null,
+    prerequisites: [],
+  },
+];
 
 function Courses() {
-  const [courses, setCourses] = useState([]);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    axios.get("http://localhost:8000/api/courses/")
-      .then(res => {
-        console.log("Fetched courses:", res.data);
-        setCourses(res.data);
-      })
-      .catch(err => {
-        console.error("Error fetching courses:", err);
-      });
-  }, []);
-
-  const filteredCourses = courses.filter(course =>
-    course.name.toLowerCase().includes(search.toLowerCase()) ||
-    course.code.toLowerCase().includes(search.toLowerCase())
+  const filteredCourses = dummyCourses.filter(
+    (course) =>
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div>
-      <h1>Courses</h1>
+    <div className="courses-container">
+      <h2>Available Courses</h2>
       <input
         type="text"
-        placeholder="Search by name or code..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{ marginBottom: "1rem", padding: "0.5rem", width: "100%" }}
+        placeholder="Search courses..."
+        className="search-bar"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
       />
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: "left", borderBottom: "1px solid #ccc" }}>Code</th>
-            <th style={{ textAlign: "left", borderBottom: "1px solid #ccc" }}>Name</th>
-            <th style={{ textAlign: "left", borderBottom: "1px solid #ccc" }}>Department</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredCourses.map((course, i) => (
-            <tr key={i}>
-              <td>{course.code}</td>
-              <td>{course.name}</td>
-              <td>{course.department_name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="courses-grid">
+        {filteredCourses.map((course) => (
+          <CourseCard key={course.id} course={course} />
+        ))}
+      </div>
     </div>
   );
 }
