@@ -89,7 +89,7 @@ DATABASES = {
         'PORT': config('DB_PORT', default='3306'),
     }
 }
-DEBUG = config('DEBUG', default=False, cast=bool)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

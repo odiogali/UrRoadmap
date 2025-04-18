@@ -5,17 +5,15 @@ from rest_framework.response import Response
 from rest_framework import viewsets, generics, status
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
-                    Enrollment, Professor, Employee, SupportStaff, 
-                    AdminStaff, TeachingStaff, CourseTextbook)
+                    Professor, SupportStaff, 
+                    AdminStaff, TeachingStaff)
 from .serializers import (DepartmentSerializer, DegreeProgramSerializer, 
-                         CourseSerializer, CourseDetailSerializer, 
+                         CourseSerializer, 
                          TextbookSerializer, SectionSerializer, 
                          StudentSerializer, GraduateSerializer, 
-                         UndergraduateSerializer, EnrollmentSerializer,
-                         CourseProgressionSerializer, EmployeeSerializer, 
+                         UndergraduateSerializer, 
                          SupportStaffSerializer, AdminStaffSerializer, 
-                         ProfessorSerializer, TeachingStaffSerializer, 
-                         CourseTextbookSerializer)
+                         ProfessorSerializer, TeachingStaffSerializer)
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Department.objects.all()
@@ -31,7 +29,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
-            return CourseDetailSerializer
+            return CourseSerializer
         return CourseSerializer
     
     def get_queryset(self):
@@ -63,20 +61,10 @@ class StudentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
-class EnrollmentViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Enrollment.objects.all()
-    serializer_class = EnrollmentSerializer
-    
-    def get_queryset(self):
-        queryset = Enrollment.objects.all()
-        student_id = self.request.query_params.get('student')
-        if student_id:
-            queryset = queryset.filter(student_id=student_id)
-        return queryset
 
 class CourseProgressionView(generics.ListAPIView):
     """Special view for getting course progression data for visualization"""
-    serializer_class = CourseProgressionSerializer
+    #serializer_class = CourseProgressionSerializer
     
     def get_queryset(self):
         queryset = Course.objects.all().prefetch_related('prerequisites', 'is_prerequisite_for')
@@ -122,18 +110,6 @@ class UndergraduateListView(generics.ListAPIView):
             queryset = queryset.filter(credits_completed__lte=int(credits_max))
         return queryset
 
-class EmployeeListView(generics.ListAPIView):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
-    
-    def get_queryset(self):
-        queryset = Employee.objects.all()
-        name = self.request.query_params.get('name')
-        if name:
-            queryset = queryset.filter(
-                models.Q(fname__icontains=name) | models.Q(lname__icontains=name)
-            )
-        return queryset
 
 class SupportStaffListView(generics.ListAPIView):
     queryset = SupportStaff.objects.all()
@@ -181,21 +157,4 @@ class TeachingStaffListView(generics.ListAPIView):
                 models.Q(professor__department__name=department) |
                 models.Q(graduate_student__majors__name=department)
             )
-        return queryset
-
-class CourseTextbookListView(generics.ListAPIView):
-    queryset = CourseTextbook.objects.all()
-    serializer_class = CourseTextbookSerializer
-    
-    def get_queryset(self):
-        queryset = CourseTextbook.objects.all()
-        course = self.request.query_params.get('course')
-        required = self.request.query_params.get('required')
-        
-        if course:
-            queryset = queryset.filter(course__code=course)
-        if required is not None:
-            required_bool = required.lower() == 'true'
-            queryset = queryset.filter(is_required=required_bool)
-            
         return queryset
