@@ -47,7 +47,7 @@ class TextbookSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CourseSerializer(serializers.ModelSerializer):
-    department_name = serializers.CharField(source='department.name', read_only=True)
+    department_name = serializers.CharField(source='dno.dname', read_only=True)
     
     class Meta:
         model = Course
@@ -64,14 +64,13 @@ class SectionSerializer(serializers.ModelSerializer):
     
 
 class StudentSerializer(serializers.ModelSerializer):
-    majors = serializers.StringRelatedField(many=True, read_only=True)
-    minors = serializers.StringRelatedField(many=True, read_only=True)
-    degree_program_name = serializers.CharField(source='degree_program.name', read_only=True)
+    majors = serializers.CharField(source='major.prog_name', read_only=True)
+    minors = serializers.CharField(source='minor.prog_name', read_only=True)
+    #degree_program_name = serializers.CharField(source='degree_program.name', read_only=True) #this isn't in backend
     
     class Meta:
         model = Student
-        fields = ['student_id', 'fname', 'lname', 'student_type', 'degree_program', 
-                 'degree_program_name', 'gpa', 'majors', 'minors']
+        fields = ['student_id', 'fname', 'lname', 'majors', 'minors']
 
 class GraduateSerializer(serializers.ModelSerializer):
     majors = serializers.StringRelatedField(many=True, read_only=True)

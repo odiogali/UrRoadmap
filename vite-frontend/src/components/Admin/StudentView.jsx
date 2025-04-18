@@ -1,10 +1,11 @@
-// src/pages/StudentTable.jsx
 import { useEffect, useState } from "react";
 import "./StudentView.css";
 
 function StudentView() {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const mockStudents = [
     {
@@ -31,17 +32,18 @@ function StudentView() {
     },
   ];
 
-  /*
-    useEffect(() => {
-    fetch("http://localhost:8000/api/students/")
-      .then((res) => res.json())
-      .then((data) => setStudents(data))
-      .catch((err) => console.error("Error fetching students:", err));
-  }, []);
-  */
-
   useEffect(() => {
-    setStudents(mockStudents);
+    fetch("http://localhost:8000/api/student/")
+      .then((res) => res.json())
+      .then((data) => {
+        setStudents(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching students:", err);
+        setError("Failed to load students.");
+        setLoading(false);
+      });
   }, []);
 
   const filtered = students.filter(
@@ -49,6 +51,9 @@ function StudentView() {
       `${s.fname} ${s.lname}`.toLowerCase().includes(search.toLowerCase()) ||
       s.student_id.toString().includes(search)
   );
+
+  if (loading) return <p>Loading students...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="student-page">
@@ -68,7 +73,6 @@ function StudentView() {
             <th>ID</th>
             <th>First</th>
             <th>Last</th>
-            <th>Program</th>
             <th>Majors</th>
             <th>Minors</th>
           </tr>
@@ -80,14 +84,13 @@ function StudentView() {
                 <td>{s.student_id}</td>
                 <td>{s.fname || "—"}</td>
                 <td>{s.lname || "—"}</td>
-                <td>{s.degree_program_name || "—"}</td>
-                <td>{s.majors?.join(", ") || "—"}</td>
-                <td>{s.minors?.join(", ") || "—"}</td>
+                <td>{s.majors || "—"}</td>
+                <td>{s.minors || "—"}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="6">No students match your search.</td>
+              <td colSpan="5">No students match your search.</td>
             </tr>
           )}
         </tbody>

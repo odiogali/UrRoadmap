@@ -15,9 +15,7 @@ function CourseView() {
         const transformed = res.data.map((course, index) => ({
           id: index,
           code: course.course_code,
-          textbook: course.textbook_isbn
-            ? `${course.textbook_isbn}`
-            : "No textbook assigned.",
+          textbook: course.textbook_isbn || "—",
           professorId: course.prof || "—",
           department: course.department_name || "—",
         }));
