@@ -62,7 +62,6 @@ class Graduate(models.Model):
 
 
 class HasAsAntireq(models.Model):
-    id = models.AutoField(primary_key=True)
     antireq_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Antireq_code')
     course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code', related_name='hasasantireq_course_code_set')
 
@@ -77,7 +76,6 @@ class HasAsAntireq(models.Model):
 
 
 class HasAsPreq(models.Model):
-    id = models.AutoField(primary_key=True)
     prereq_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Prereq_code')
     course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code', related_name='hasaspreq_course_code_set')
 
@@ -91,7 +89,6 @@ class HasAsPreq(models.Model):
         return (self.prereq_code, self.course_code)
 
 class HasTaken(models.Model):
-    id = models.AutoField(primary_key=True)
     course_code = models.ForeignKey(Course, models.DO_NOTHING, db_column='Course_code')
     student = models.ForeignKey('Student', models.DO_NOTHING, db_column='Student_id')
     grade = models.CharField(db_column='Grade', max_length=2, blank=True, null=True)

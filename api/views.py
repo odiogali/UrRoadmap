@@ -14,7 +14,7 @@ from .serializers import (DepartmentSerializer, DegreeProgramSerializer,
                          StudentSerializer, GraduateSerializer, 
                          UndergraduateSerializer, 
                          SupportStaffSerializer, AdminStaffSerializer, 
-                         ProfessorSerializer, TeachingStaffSerializer, PrerequisiteSerializer, AntirequisiteSerializer)
+                         ProfessorSerializer, TeachingStaffSerializer)
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Department.objects.all()
@@ -43,24 +43,18 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
 @api_view(['GET'])
 def get_prereqs(request, course_code):
     try:
-        # Get the Course object first to ensure it exists
-        course = Course.objects.get(course_code=course_code)
-        
-        # Then find prerequisites using the Course object
-        prereqs = HasAsPreq.objects.filter(course_code=course).select_related('prereq_code')
-        
-        # You may need to create a custom response format depending on what data you want
-        result = []
-        for prereq in prereqs:
-            result.append({
-                'prereq_code': prereq.prereq_code.course_code,
-                # Include any other fields you need
-            })
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT c.Course_code 
+                FROM has_as_preq hp
+                JOIN course c ON hp.Prereq_code = c.Course_code
+                WHERE hp.Course_code = %s
+            """, [course_code])
+            
+            result = [{'prereq_code': row[0]} for row in cursor.fetchall()]
         
         return Response(result)
-    except Course.DoesNotExist:
-        return Response({"error": f"Course with code {course_code} not found"}, 
-                        status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -85,9 +79,6 @@ def get_antireqs(request, course_code):
                 result.append({'antireq_code': row[0]})
         
         return Response(result)
-    except Course.DoesNotExist:
-        return Response({"error": f"Course with code {course_code} not found"}, 
-                        status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
