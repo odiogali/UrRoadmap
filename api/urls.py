@@ -20,4 +20,5 @@ urlpatterns = [
     path('teaching-staff/', views.TeachingStaffListView.as_view(), name='teaching-staff-list'),
     path('prerequisites/<str:course_code>/', views.get_prereqs, name='get_prereqs'),
     path('antirequisites/<str:course_code>/', views.get_antireqs, name='get_antireqs'),
+    path('graph/', views.course_graph),
 ]

@@ -1,6 +1,7 @@
 import StudentNav from "./StudentNav";
 import { Routes, Route } from "react-router-dom";
 import Courses from "../Courses/Courses";
+import CourseGraph from "../CourseGraph";
 
 function StudentDashboard() {
   return (
@@ -13,9 +14,9 @@ function StudentDashboard() {
             element={
               <div>
                 <h1>Welcome to the Degree Tracker</h1>
-                <p>
-                  This would be a dashboard with graphs and cool stuff later.
-                </p>
+                <div style={{ border: "1px solid #ddd", marginTop: "2rem" }}>
+                  <CourseGraph />
+                </div>
               </div>
             }
           />

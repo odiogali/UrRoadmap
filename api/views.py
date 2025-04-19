@@ -82,6 +82,33 @@ def get_antireqs(request, course_code):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+def course_graph(request):
+    from django.db import connection
+    nodes = set()
+    links = []
+
+    with connection.cursor() as cursor:
+        # Get all courses
+        cursor.execute("SELECT Course_code FROM course")
+        for (code,) in cursor.fetchall():
+            nodes.add(code)
+
+        # Get all prereqs
+        cursor.execute("SELECT Prereq_code, Course_code FROM has_as_preq")
+        for prereq, course in cursor.fetchall():
+            nodes.update([prereq, course])
+            links.append({
+                "source" : prereq,
+                "target" : course,
+                "type" : "prereq"
+            })
+
+    return Response({
+        "nodes" : [{"id":code} for code in nodes],
+        "links" : links
+    })
+
 class TextbookViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Textbook.objects.all()
     serializer_class = TextbookSerializer
