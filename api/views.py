@@ -85,28 +85,69 @@ def get_antireqs(request, course_code):
 @api_view(['GET'])
 def course_graph(request):
     from django.db import connection
+    department = request.query_params.get('department', 'all')
+    
     nodes = set()
     links = []
-
+    
     with connection.cursor() as cursor:
-        # Get all courses
-        cursor.execute("SELECT Course_code FROM course")
-        for (code,) in cursor.fetchall():
+        # Get courses based on department filter
+        if department != 'all':
+            cursor.execute("""
+                SELECT c.Course_code, c.Textbook_ISBN, d.Dname, c.Prof_id
+                FROM course c
+                JOIN department d ON c.Dno = d.Dno
+                WHERE c.Dno = %s
+            """, [department])
+        else:
+            cursor.execute("""
+                SELECT c.Course_code, c.Textbook_ISBN, d.Dname, c.Prof_id
+                FROM course c
+                LEFT JOIN department d ON c.Dno = d.Dno
+            """)
+        
+        # Build node details dictionary
+        node_details = {}
+        for code, isbn, dept_name, prof_id in cursor.fetchall():
             nodes.add(code)
-
-        # Get all prereqs
-        cursor.execute("SELECT Prereq_code, Course_code FROM has_as_preq")
+            node_details[code] = {
+                "id": code,
+                "textbook": isbn,
+                "department": dept_name,
+                "professor": prof_id
+            }
+        
+        # Get prerequisite relationships relevant to the department
+        if department != 'all':
+            cursor.execute("""
+                SELECT h.Prereq_code, h.Course_code
+                FROM has_as_preq h
+                JOIN course c ON h.Course_code = c.Course_code
+                WHERE c.Dno = %s
+            """, [department])
+        else:
+            cursor.execute("SELECT Prereq_code, Course_code FROM has_as_preq")
+        
+        # Process prerequisites
         for prereq, course in cursor.fetchall():
-            nodes.update([prereq, course])
+            nodes.add(prereq)
+            nodes.add(course)
+            
             links.append({
-                "source" : prereq,
-                "target" : course,
-                "type" : "prereq"
+                "source": prereq,
+                "target": course,
+                "type": "prereq"
             })
-
+        
+        # Build final node list with all details
+        node_list = []
+        for code in nodes:
+            details = node_details.get(code, {"id": code})
+            node_list.append(details)
+    
     return Response({
-        "nodes" : [{"id":code} for code in nodes],
-        "links" : links
+        "nodes": node_list,
+        "links": links
     })
 
 class TextbookViewSet(viewsets.ReadOnlyModelViewSet):

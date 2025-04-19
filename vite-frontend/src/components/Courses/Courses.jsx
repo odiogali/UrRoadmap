@@ -54,9 +54,9 @@ function Courses() {
             return {
               id: index,
               code: course.course_code,
-              title: `Course: ${course.course_code}`,
-              description: textbookTitle
-                ? `Textbook: ${textbookTitle}`
+              title: `${course.course_code}`,
+              textbook: textbookTitle
+                ? `${textbookTitle}`
                 : "No textbook assigned.",
               instructor: profName,
               prerequisites: prerequisites,

@@ -3,12 +3,88 @@ import * as d3 from 'd3';
 
 function CourseGraph() {
   const ref = useRef();
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [departments, setDepartments] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch departments and initial graph data on component mount
+  useEffect(() => {
+    // Fetch departments
+    fetch('http://localhost:8000/api/department/')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch departments');
+        return res.json();
+      })
+      .then((data) => {
+        console.log('Departments loaded:', data);
+        setDepartments(data);
+      })
+      .catch(err => {
+        console.error("Failed to fetch departments:", err);
+        setError("Failed to load departments. Please try again later.");
+      })
+      .finally(() => {
+        // Fetch initial graph data regardless of department fetch result
+        fetchGraphData('all');
+      });
+  }, []);
+
+  // Fetch graph data when selected department changes
+  useEffect(() => {
+    fetchGraphData(selectedDepartment);
+  }, [selectedDepartment]);
+
+  const fetchGraphData = (department) => {
+    // Clear selected node and set loading state
+    setSelectedNode(null);
+    setIsLoading(true);
+    setError(null);
+
+    // Build URL with query parameter if a specific department is selected
+    let url = 'http://localhost:8000/api/graph/';
+    if (department !== 'all') {
+      url += `?department=${department}`;
+    }
+
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch graph data');
+        return res.json();
+      })
+      .then((data) => {
+        console.log('Graph data loaded:', data);
+        setGraphData(data);
+        // Check if the response has empty nodes array
+        if (!data.nodes || data.nodes.length === 0) {
+          console.log('No courses found for this department');
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch graph data:", err);
+        setError("Failed to load course data. Please try again later.");
+        // Clear graph data on error
+        setGraphData({ nodes: [], links: [] });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  const handleDepartmentChange = (event) => {
+    const departmentId = event.target.value;
+    console.log('Switching to department:', departmentId);
+    setSelectedDepartment(departmentId);
+  };
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/graph/')
-      .then((res) => res.json())
-      .then((graph) => drawGraph(graph));
-  }, []);
+    if (!isLoading) {
+      drawGraph(graphData);
+    }
+  }, [graphData, isLoading]);
 
   const drawGraph = (graph) => {
     const width = 800;
@@ -25,6 +101,35 @@ function CourseGraph() {
 
     // Clear existing content
     svg.selectAll("*").remove();
+
+    // Check for empty graph data explicitly
+    if (!graph.nodes || graph.nodes.length === 0) {
+      // Get the currently selected department name for better messaging
+      // Get the currently selected department name for better messaging
+      const departmentName = selectedDepartment === 'all'
+        ? 'any department'
+        : departments.find(d => String(d.dno) === String(selectedDepartment))?.dname || selectedDepartment;
+
+      // Display a message with the department name
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#ffffff")
+        .attr("font-size", "18px")
+        .text(`No courses available for ${departmentName}`);
+
+      // Add smaller hint text
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2 + 30)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#aaaaaa")
+        .attr("font-size", "14px")
+        .text("Try selecting a different department");
+
+      return;
+    }
 
     // Define arrowhead marker
     svg.append("defs").append("marker")
@@ -195,9 +300,20 @@ function CourseGraph() {
       if (clickedNode === d.id) {
         clickedNode = null;
         resetHighlighting();
+        setSelectedNode(null); // Close the popup
       } else {
         clickedNode = d.id;
         highlightConnections(d);
+
+        // Set the selected node data for the popup
+        setSelectedNode(d);
+
+        // Calculate popup position based on node position
+        // Adjust as needed to ensure the popup appears near the node
+        setPopupPosition({
+          x: d.x,
+          y: d.y
+        });
       }
 
       // Prevent event propagation
@@ -209,6 +325,7 @@ function CourseGraph() {
       if (clickedNode) {
         clickedNode = null;
         resetHighlighting();
+        setSelectedNode(null); // Close the popup when clicking outside
       }
     });
 
@@ -295,12 +412,168 @@ function CourseGraph() {
       line.dimmed {
         opacity: 0.2;
       }
+      .course-popup {
+        position: absolute;
+        background-color: #fff;
+        border: 2px solid #ff4d4f;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        max-width: 300px;
+        pointer-events: auto;
+      }
+      .course-popup h3 {
+        margin-top: 0;
+        color: #ff4d4f;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 6px;
+      }
+      .course-popup p {
+        margin: 6px 0;
+      }
+      .course-popup .close-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        color: #666;
+      }
+      .course-popup .close-btn:hover {
+        color: #ff4d4f;
+      }
+      .department-selector-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+        width: 100%;
+      }
+      .department-selector {
+        display: flex;
+        align-items: center;
+        background-color: rgba(45, 45, 45, 0.8);
+        padding: 8px 16px;
+        border-radius: 6px;
+      }
+      .department-selector label {
+        margin-right: 10px;
+        font-weight: bold;
+        color: #ffffff;
+      }
+      .department-selector select {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #444;
+        background-color: #333;
+        color: #ffffff;
+        font-size: 14px;
+        min-width: 180px;
+        outline: none;
+      }
+      .department-selector select:focus {
+        border-color: #ff4d4f;
+      }
+      .department-selector select option {
+        background-color: #333;
+        color: #ffffff;
+      }
+      .loading-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ffffff;
+        font-size: 18px;
+      }
+      .error-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ff4d4f;
+        font-size: 18px;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 80%;
+      }
     `;
     document.head.appendChild(style);
   };
 
+  // Component for the popup that displays course information
+  const CoursePopup = ({ node, position, onClose }) => {
+    if (!node) return null;
+
+    // Calculate adjusted position to ensure popup stays within view
+    const adjustedX = Math.min(position.x + 20, window.innerWidth - 320);
+    const adjustedY = Math.min(position.y - 100, window.innerHeight - 200);
+
+    return (
+      <div
+        className="course-popup"
+        style={{
+          left: `${adjustedX}px`,
+          top: `${adjustedY}px`
+        }}
+      >
+        <button className="close-btn" onClick={onClose}>×</button>
+        <h3>{node.id}</h3>
+        <p><strong>Title:</strong> {node.title || 'Not specified'}</p>
+        <p><strong>Credits:</strong> {node.credits || 'Not specified'}</p>
+        <p><strong>Description:</strong> {node.description || 'No description available'}</p>
+        {node.prerequisites && node.prerequisites.length > 0 && (
+          <p><strong>Prerequisites:</strong> {node.prerequisites.join(', ')}</p>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <svg ref={ref}></svg>
+    <div style={{ position: 'relative' }}>
+      <div className="department-selector-container">
+        <div className="department-selector">
+          <label htmlFor="department">Department:</label>
+          <select
+            id="department"
+            value={selectedDepartment}
+            onChange={handleDepartmentChange}
+            disabled={isLoading}
+          >
+            <option value="all">All Departments</option>
+            {departments.map(department => (
+              <option key={department.dno} value={department.dno}>
+                {department.dname}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <svg ref={ref} width="800" height="600">
+        {/* Default viewBox will be set in drawGraph */}
+      </svg>
+
+      {isLoading && (
+        <div className="loading-indicator">Loading courses...</div>
+      )}
+
+      {error && (
+        <div className="error-message">{error}</div>
+      )}
+
+      {selectedNode && (
+        <CoursePopup
+          node={selectedNode}
+          position={popupPosition}
+          onClose={() => setSelectedNode(null)}
+        />
+      )}
+    </div>
   );
 }
 
