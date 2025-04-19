@@ -518,6 +518,49 @@ function CourseGraph() {
 
   // Component for the popup that displays course information
   const CoursePopup = ({ node, position, onClose }) => {
+    const [professorName, setProfessorName] = React.useState('Loading...');
+    const [textbookTitle, setTextbookTitle] = React.useState('Loading...');
+    const [isLoading, setIsLoading] = React.useState(false);
+
+    React.useEffect(() => {
+      // Only fetch data if we have valid IDs
+      if (node) {
+        setIsLoading(true);
+
+        // Fetch professor name if professor ID exists
+        if (node.professor) {
+          fetch(`http://localhost:8000/api/professors/${node.professor}/`)
+            .then(res => res.json())
+            .then(data => {
+              setProfessorName(`${data.fname} ${data.lname}`);
+            })
+            .catch(err => {
+              console.error("Failed to fetch professor data:", err);
+              setProfessorName('Unknown');
+            })
+            .finally(() => setIsLoading(false));
+        } else {
+          setProfessorName('Not assigned');
+        }
+
+        // Fetch textbook title if ISBN exists
+        if (node.textbook) {
+          fetch(`http://localhost:8000/api/textbook/${node.textbook}/`)
+            .then(res => res.json())
+            .then(data => {
+              setTextbookTitle(data.title);
+            })
+            .catch(err => {
+              console.error("Failed to fetch textbook data:", err);
+              setTextbookTitle('Unknown');
+            })
+            .finally(() => setIsLoading(false));
+        } else {
+          setTextbookTitle('None');
+        }
+      }
+    }, [node]);
+
     if (!node) return null;
 
     // Log the node data for debugging
@@ -574,8 +617,14 @@ function CourseGraph() {
 
         <div style={{ marginTop: '10px' }}>
           <p><strong>Department:</strong> {node.department || 'Not specified'}</p>
-          <p><strong>Professor ID:</strong> {node.professor !== undefined ? node.professor : 'Not specified'}</p>
-          <p><strong>Textbook ISBN:</strong> {node.textbook || 'None'}</p>
+          <p><strong>Professor:</strong> {isLoading && node.professor ? 'Loading...' : professorName}</p>
+
+          {/* Show textbook title and ISBN in parentheses if available */}
+          <p>
+            <strong>Textbook:</strong> {isLoading && node.textbook ? 'Loading...' : textbookTitle}
+            {node.textbook && textbookTitle !== 'None' && textbookTitle !== 'Unknown' ? ` (ISBN: ${node.textbook})` : ''}
+          </p>
+
           <p><strong>Antirequisites:</strong> {displayArray(node.antirequisites)}</p>
         </div>
       </div>
