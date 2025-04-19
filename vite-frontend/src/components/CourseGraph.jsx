@@ -20,7 +20,7 @@ function CourseGraph() {
         return res.json();
       })
       .then((data) => {
-        console.log('Departments loaded:', data);
+        // console.log('Departments loaded:', data);
         setDepartments(data);
       })
       .catch(err => {
@@ -56,7 +56,7 @@ function CourseGraph() {
         return res.json();
       })
       .then((data) => {
-        console.log('Graph data loaded:', data);
+        // console.log('Graph data loaded:', data);
         setGraphData(data);
         // Check if the response has empty nodes array
         if (!data.nodes || data.nodes.length === 0) {
@@ -76,7 +76,7 @@ function CourseGraph() {
 
   const handleDepartmentChange = (event) => {
     const departmentId = event.target.value;
-    console.log('Switching to department:', departmentId);
+    // console.log('Switching to department:', departmentId);
     setSelectedDepartment(departmentId);
   };
 
@@ -305,11 +305,22 @@ function CourseGraph() {
         clickedNode = d.id;
         highlightConnections(d);
 
+        // Find the full node data from graphData
+        const fullNodeData = graphData.nodes.find(node => node.id === d.id);
+        console.log("Full node data for popup:", fullNodeData);
+
+        // If d3 has modified the structure, reconstruct the node data
+        const nodeForPopup = {
+          ...d,  // Include all D3 properties like x, y
+          ...fullNodeData  // Overlay with full API data
+        };
+
+        console.log("Combined node data for popup:", nodeForPopup);
+
         // Set the selected node data for the popup
-        setSelectedNode(d);
+        setSelectedNode(nodeForPopup);
 
         // Calculate popup position based on node position
-        // Adjust as needed to ensure the popup appears near the node
         setPopupPosition({
           x: d.x,
           y: d.y
@@ -509,26 +520,64 @@ function CourseGraph() {
   const CoursePopup = ({ node, position, onClose }) => {
     if (!node) return null;
 
+    // Log the node data for debugging
+    console.log("Popup rendering with node:", node);
+    console.log("Node properties:", Object.keys(node));
+
     // Calculate adjusted position to ensure popup stays within view
     const adjustedX = Math.min(position.x + 20, window.innerWidth - 320);
     const adjustedY = Math.min(position.y - 100, window.innerHeight - 200);
+
+    // Helper function to safely display array data
+    const displayArray = (arr) => {
+      if (!arr) return 'None';
+      if (!Array.isArray(arr)) return String(arr);
+      if (arr.length === 0) return 'None';
+      return arr.join(', ');
+    };
 
     return (
       <div
         className="course-popup"
         style={{
           left: `${adjustedX}px`,
-          top: `${adjustedY}px`
+          top: `${adjustedY}px`,
+          position: 'absolute',
+          backgroundColor: 'white',
+          border: '2px solid #ff4d4f',
+          borderRadius: '8px',
+          padding: '15px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+          zIndex: 1000,
+          maxWidth: '300px',
+          color: '#333'
         }}
       >
-        <button className="close-btn" onClick={onClose}>×</button>
-        <h3>{node.id}</h3>
-        <p><strong>Title:</strong> {node.title || 'Not specified'}</p>
-        <p><strong>Credits:</strong> {node.credits || 'Not specified'}</p>
-        <p><strong>Description:</strong> {node.description || 'No description available'}</p>
-        {node.prerequisites && node.prerequisites.length > 0 && (
-          <p><strong>Prerequisites:</strong> {node.prerequisites.join(', ')}</p>
-        )}
+        <button
+          className="close-btn"
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            right: '10px',
+            top: '10px',
+            background: 'none',
+            border: 'none',
+            fontSize: '18px',
+            cursor: 'pointer',
+            color: '#666'
+          }}
+        >
+          ×
+        </button>
+
+        <h3 style={{ color: '#ff4d4f', marginTop: '0' }}>{node.id}</h3>
+
+        <div style={{ marginTop: '10px' }}>
+          <p><strong>Department:</strong> {node.department || 'Not specified'}</p>
+          <p><strong>Professor ID:</strong> {node.professor !== undefined ? node.professor : 'Not specified'}</p>
+          <p><strong>Textbook ISBN:</strong> {node.textbook || 'None'}</p>
+          <p><strong>Antirequisites:</strong> {displayArray(node.antirequisites)}</p>
+        </div>
       </div>
     );
   };

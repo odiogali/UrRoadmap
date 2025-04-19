@@ -114,7 +114,8 @@ def course_graph(request):
                 "id": code,
                 "textbook": isbn,
                 "department": dept_name,
-                "professor": prof_id
+                "professor": prof_id,
+                "antirequisites": []
             }
         
         # Get prerequisite relationships relevant to the department
@@ -128,16 +129,51 @@ def course_graph(request):
         else:
             cursor.execute("SELECT Prereq_code, Course_code FROM has_as_preq")
         
-        # Process prerequisites
+        # Process prerequisites - only for links, not for node attributes
         for prereq, course in cursor.fetchall():
             nodes.add(prereq)
             nodes.add(course)
             
+            # Create only links for prerequisites
             links.append({
                 "source": prereq,
                 "target": course,
                 "type": "prereq"
             })
+            
+            # Ensure both nodes exist in node_details, at minimum with an ID
+            if prereq not in node_details:
+                node_details[prereq] = {"id": prereq, "antirequisites": []}
+            if course not in node_details:
+                node_details[course] = {"id": course, "antirequisites": []}
+        
+        # Get antirequisite relationships
+        if department != 'all':
+            cursor.execute("""
+                SELECT h.Antireq_code, h.Course_code
+                FROM has_as_antireq h
+                JOIN course c ON h.Course_code = c.Course_code
+                WHERE c.Dno = %s
+            """, [department])
+        else:
+            cursor.execute("SELECT Antireq_code, Course_code FROM has_as_antireq")
+        
+        # Process antirequisites - only adding to node details
+        for antireq, course in cursor.fetchall():
+            # Add antirequisite information to both courses (bidirectional)
+            # For the course
+            if course in node_details:
+                node_details[course]["antirequisites"].append(antireq)
+            else:
+                node_details[course] = {"id": course, "antirequisites": [antireq]}
+                nodes.add(course)
+                
+            # For the antirequisite
+            if antireq in node_details:
+                node_details[antireq]["antirequisites"].append(course)
+            else:
+                node_details[antireq] = {"id": antireq, "antirequisites": [course]}
+                nodes.add(antireq)
         
         # Build final node list with all details
         node_list = []
