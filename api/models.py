@@ -71,6 +71,10 @@ class HasAsAntireq(models.Model):
         db_table = 'has_as_antireq'
         unique_together = (('antireq_code', 'course_code'),)
 
+    @property
+    def pk(self):
+        return (self.antireq_code, self.course_code)
+
 
 class HasAsPreq(models.Model):
     id = models.AutoField(primary_key=True)
@@ -82,6 +86,9 @@ class HasAsPreq(models.Model):
         db_table = 'has_as_preq'
         unique_together = (('prereq_code', 'course_code'),)
 
+    @property
+    def pk(self):
+        return (self.prereq_code, self.course_code)
 
 class HasTaken(models.Model):
     id = models.AutoField(primary_key=True)

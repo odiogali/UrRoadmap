@@ -18,6 +18,14 @@ function CourseCard({ course }) {
       ) : (
         <p className="prereqs">No prerequisites</p>
       )}
+
+      {course.antirequisites && course.antirequisites.length > 0 ? (
+        <div className="antireqs">
+          <strong>Antirequisites:</strong> {course.antirequisites.join(", ")}
+        </div>
+      ) : (
+        <p className="antireqs">No antirequisites</p>
+      )}
     </div>
   );
 }

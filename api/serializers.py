@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (Department, DegreeProgram, SupportStaff, 
                    AdminStaff, Professor, Student, Graduate, 
                    TeachingStaff, Textbook, Course, 
-                   Section, Undergraduate)
+                   Section, Undergraduate, HasAsPreq, HasAsAntireq)
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,12 +46,30 @@ class TextbookSerializer(serializers.ModelSerializer):
         model = Textbook
         fields = '__all__'
 
+class PrerequisiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HasAsPreq
+        fields = ['prereq_code', 'course_code']
+
+class AntirequisiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HasAsAntireq
+        fields = ['antireq_code', 'course_code']
+
 class CourseSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source='dno.dname', read_only=True)
     
     class Meta:
         model = Course
         fields = '__all__'
+
+    def get_prerequisites(self, obj):
+        prereqs = obj.hasaspreq_course_code_set.select_related('prereq_code')
+        return PrerequisiteSerializer([p.prereq_code for p in prereqs], many=True).data
+
+    def get_antirequisites(self, obj):
+        antireqs = obj.hasasantireq_course_code_set.select_related('antireq_code')
+        return AntirequisiteSerializer([a.antireq_code for a in antireqs], many=True).data
 
 
 class SectionSerializer(serializers.ModelSerializer):

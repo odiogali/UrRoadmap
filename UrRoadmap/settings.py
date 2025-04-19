@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'UrRoadmap',
-    'frontend.apps.FrontendConfig'
 ]
 
 MIDDLEWARE = [

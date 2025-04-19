@@ -3,34 +3,6 @@ import CourseCard from "./CourseCard";
 import "./Courses.css";
 import axios from "axios";
 
-//dummy courses so i dont fuck up the backend again lol
-// const dummyCourses = [
-//   {
-//     id: 1,
-//     code: "CPSC 471",
-//     title: "Database Systems",
-//     description: "Intro to relational databases and SQL.",
-//     instructor: "Dr. Smith",
-//     prerequisites: ["CPSC 319", "CPSC 331"],
-//   },
-//   {
-//     id: 2,
-//     code: "CPSC 457",
-//     title: "Operating Systems",
-//     description: "Modern OS concepts like concurrency.",
-//     instructor: "Dr. Lee",
-//     prerequisites: ["CPSC 313"],
-//   },
-//   {
-//     id: 3,
-//     code: "CPSC 329",
-//     title: "Cybersecurity",
-//     description: "Computer and network security basics.",
-//     instructor: null,
-//     prerequisites: [],
-//   },
-// ];
-
 function Courses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,17 +11,60 @@ function Courses() {
 
   useEffect(() => {
     axios.get('http://localhost:8000/api/course/')
-      .then((res) => {
-        const transformed = res.data.map((course, index) => ({
-          id: index,
-          code: course.course_code,
-          title: `Course: ${course.course_code}`,
-          description: course.textbook_isbn
-            ? `Uses ISBN: ${course.textbook_isbn}`
-            : "No textbook assigned.",
-          instructor: `Professor ID: ${course.prof}`,
-        }));
-        setCourses(transformed);
+      .then(async (res) => {
+        const rawCourses = res.data;
+
+        const enhancedCourses = await Promise.all(
+          rawCourses.map(async (course, index) => {
+            let profName = "TBA";
+            let textbookTitle = null;
+            let prerequisites = [];
+            let antirequisites = [];
+
+            try {
+              const profRes = await axios.get(`http://localhost:8000/api/professors/${course.prof}/`);
+              profName = profRes.data.fname + " " + profRes.data.lname;
+            } catch (err) {
+              console.warn(`Prof ${course.prof} not found`);
+            }
+
+            if (course.textbook_isbn) {
+              try {
+                const tbRes = await axios.get(`http://localhost:8000/api/textbook/${course.textbook_isbn}/`);
+                textbookTitle = tbRes.data.title;
+              } catch (err) {
+                console.warn(`Textbook ${course.textbook_isbn} not found`);
+              }
+            }
+
+            try {
+              const antiRes = await axios.get(`http://localhost:8000/api/antirequisites/${course.course_code}/`);
+              antirequisites = antiRes.data.map(obj => obj.antireq_code); // Extract the course codes
+            } catch (err) {
+              console.warn(`Antireqs for ${course.course_code} not found`);
+            }
+
+            try {
+              const preRes = await axios.get(`http://localhost:8000/api/prerequisites/${course.course_code}/`);
+              prerequisites = preRes.data.map(obj => obj.prereq_code); // Extract the course codes
+            } catch (err) {
+              console.warn(`Prereqs for ${course.course_code} not found`);
+            }
+
+            return {
+              id: index,
+              code: course.course_code,
+              title: `Course: ${course.course_code}`,
+              description: textbookTitle
+                ? `Textbook: ${textbookTitle}`
+                : "No textbook assigned.",
+              instructor: profName,
+              prerequisites: prerequisites,
+              antirequisites: antirequisites
+            }
+          })
+        )
+        setCourses(enhancedCourses);
         setLoading(false);
       })
       .catch((err) => {

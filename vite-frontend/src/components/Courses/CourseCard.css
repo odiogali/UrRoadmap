@@ -25,7 +25,7 @@
     margin: 0.5rem 0;
   }
   
-  .instructor, .prereqs {
+  .instructor, .antireqs, .prereqs {
     font-size: 0.8rem;
     color: #444;
     margin-top: 0.5rem;
