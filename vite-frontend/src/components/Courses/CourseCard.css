@@ -1,33 +1,43 @@
 .course-card {
-    background-color: #fff;
-    border: 1px solid #eee;
+    background-color: #222; /* Dark background instead of white */
+    border: 1px solid #333; /* Darker border */
     padding: 1.25rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* Slightly stronger shadow */
     transition: 0.2s ease;
     font-size: 0.95rem;
-  }
+    color: white; /* White text for readability */
+}
   
-  .course-card:hover {
+.course-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  }
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3); /* Stronger shadow on hover */
+}
   
-  .course-title {
+.course-card h3 {
+    color: white; /* Course code header */
+    margin-top: 0;
+}
+
+.course-title {
     font-weight: 600;
     margin-top: 0.25rem;
-    color: #333;
-  }
+    color: white; /* Light color instead of dark */
+}
   
-  .textbook {
+.textbook {
     font-size: 0.85rem;
-    color: #666;
+    color: #ccc; /* Lighter color for readability */
     margin: 0.5rem 0;
-  }
+}
   
-  .instructor, .antireqs, .prereqs {
+.instructor, .antireqs, .prereqs {
     font-size: 0.8rem;
-    color: #444;
+    color: #bbb; /* Lighter color for readability */
     margin-top: 0.5rem;
-  }
-  
+}
+
+/* Make strong tags stand out better on dark background */
+.course-card strong {
+    color: #ddd;
+}
