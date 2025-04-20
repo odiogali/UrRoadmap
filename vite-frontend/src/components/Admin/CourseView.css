@@ -1,45 +1,44 @@
 .course-page {
-    padding: 1rem;
-    font-family: 'Segoe UI', sans-serif;
-  }
+  padding: 1rem;
+  font-family: 'Segoe UI', sans-serif;
+}
   
-  .course-title {
-    font-size: 1.75rem;
-    margin-bottom: 1rem;
-    color: #222;
-  }
-  
-  .course-search {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-bottom: 1.5rem;
-  }
-  
-  .course-table {
+.course-title {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.course-search {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.course-table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #ddd;
-  }
-  
-  .course-table th,
-  .course-table td {
+    border: 1px solid #333;
+}
+
+.course-table th,
+.course-table td {
     padding: 0.75rem;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #333; /* darker border */
     text-align: left;
-  }
-  
-  .course-table th {
-    background-color: #f5f5f5;
-  }
-  
-  .course-table tr:nth-child(even) {
-    background-color: #fdfdfd;
-  }
-  
-  .course-table tr:hover {
-    background-color: #f0f8ff;
-  }
-  
+    color: white; /* for text to be visible on dark background */
+}
+
+.course-table th {
+    background-color: #222222; /* dark background */
+}
+
+.course-table tr {
+    background-color: #222222; /* dark background for all rows */
+}
+.course-table tr:hover {
+    background-color: #333333; /* slightly lighter than the base color */
+}

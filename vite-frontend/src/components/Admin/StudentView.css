@@ -1,45 +1,50 @@
 .student-page {
     padding: 1rem;
     font-family: 'Segoe UI', sans-serif;
-  }
+}
   
-  .student-title {
+.student-title {
     font-size: 1.75rem;
     margin-bottom: 1rem;
-    color: #222;
-  }
+    color: #fff;
+}
   
-  .student-search {
+.student-search {
     width: 100%;
     padding: 0.75rem;
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     margin-bottom: 1.5rem;
-  }
+}
   
-  .student-table {
+.student-table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #ddd;
-  }
+    border: 1px solid #333;
+}
   
-  .student-table th,
-  .student-table td {
+.student-table th,
+.student-table td {
     padding: 0.75rem;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #333;
     text-align: left;
-  }
+    color: white;
+}
   
-  .student-table th {
-    background-color: #f8f8f8;
-  }
+.student-table th {
+    background-color: #222222;
+}
+
+.student-table tr {
+    background-color: #222222;
+}
   
-  .student-table tr:nth-child(even) {
+/* Remove or comment out this rule */
+/* .student-table tr:nth-child(even) {
     background-color: #fdfdfd;
-  }
+} */
   
-  .student-table tr:hover {
-    background-color: #f0f8ff;
-  }
-  
+.student-table tr:hover {
+    background-color: #333333;
+}
