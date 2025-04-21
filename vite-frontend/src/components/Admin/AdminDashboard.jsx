@@ -3,6 +3,7 @@ import AdminNav from "./AdminNav";
 import StudentView from "./StudentView";
 import CourseView from "./CourseView";
 import FacultyView from "./FacultyView";
+import Dashboard from "./Dashboard";
 
 function AdminDashboard() {
   return (
@@ -13,15 +14,7 @@ function AdminDashboard() {
         <Routes>
           <Route
             index
-            element={
-              <div>
-                <h1>Welcome Admin 👋</h1>
-                <p>
-                  This is your dashboard. You can manage students, faculty, and
-                  courses from here.
-                </p>
-              </div>
-            }
+            element={<Dashboard />}
           />
           <Route path="students" element={<StudentView />} />
           <Route

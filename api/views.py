@@ -23,7 +23,7 @@ class DegreeProgramViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DegreeProgram.objects.all()
     serializer_class = DegreeProgramSerializer
 
-class CourseViewSet(viewsets.ReadOnlyModelViewSet):
+class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
