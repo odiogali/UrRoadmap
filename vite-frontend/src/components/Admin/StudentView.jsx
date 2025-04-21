@@ -7,31 +7,6 @@ function StudentView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const mockStudents = [
-    {
-      student_id: 10001,
-      fname: "Amina",
-      lname: "Diallo",
-      student_type: "undergraduate",
-      degree_program: "BSc Computer Science",
-      degree_program_name: "BSc Computer Science",
-      gpa: 3.78,
-      majors: ["Computer Science"],
-      minors: ["Mathematics"],
-    },
-    {
-      student_id: 10002,
-      fname: "David",
-      lname: "Lee",
-      student_type: "graduate",
-      degree_program: "MSc Data Science",
-      degree_program_name: "MSc Data Science",
-      gpa: 3.92,
-      majors: ["Data Science"],
-      minors: [],
-    },
-  ];
-
   useEffect(() => {
     fetch("http://localhost:8000/api/student/")
       .then((res) => res.json())

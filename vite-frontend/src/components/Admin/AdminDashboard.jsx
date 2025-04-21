@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import AdminNav from "./AdminNav";
 import StudentView from "./StudentView";
 import CourseView from "./CourseView";
+import FacultyView from "./FacultyView";
 
 function AdminDashboard() {
   return (
@@ -25,23 +26,9 @@ function AdminDashboard() {
           <Route path="students" element={<StudentView />} />
           <Route
             path="faculty"
-            element={
-              <div>
-                <h2>View Faculty</h2>
-                <p>Here you would view or manage faculty members.</p>
-              </div>
-            }
+            element={<FacultyView />}
           />
           <Route path="courses" element={<CourseView />} />
-          <Route
-            path="manage-courses"
-            element={
-              <div>
-                <h2>Manage Courses</h2>
-                <p>Add, update, or remove courses from the database.</p>
-              </div>
-            }
-          />
         </Routes>
       </div>
     </div>

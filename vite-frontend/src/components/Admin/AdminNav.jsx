@@ -28,9 +28,6 @@ function AdminNav() {
         <Link to="/admin/faculty" className="topbar-link">
           Faculty
         </Link>
-        <Link to="/admin/manage-courses" className="topbar-link">
-          Manage Courses
-        </Link>
       </div>
 
       <div className="topbar-right">
