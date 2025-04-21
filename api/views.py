@@ -1,9 +1,8 @@
 from django.shortcuts import render
 from django.db import models
-from rest_framework.views import APIView
+from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import viewsets, generics, status
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
                     Professor, SupportStaff, 
@@ -204,7 +203,7 @@ class SectionViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(semester=semester)
         return queryset
 
-class StudentViewSet(viewsets.ReadOnlyModelViewSet):
+class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
@@ -231,8 +230,7 @@ class CourseProgressionView(generics.ListAPIView):
         
         return queryset
 
-# New ListAPIViews
-class GraduateListView(generics.ListAPIView):
+class GraduateListView(generics.ListCreateAPIView):
     queryset = Graduate.objects.all()
     serializer_class = GraduateSerializer
     
@@ -243,7 +241,7 @@ class GraduateListView(generics.ListAPIView):
             queryset = queryset.filter(research_area__icontains=research_area)
         return queryset
 
-class UndergraduateListView(generics.ListAPIView):
+class UndergraduateListView(generics.ListCreateAPIView):
     queryset = Undergraduate.objects.all()
     serializer_class = UndergraduateSerializer
     
@@ -258,7 +256,7 @@ class UndergraduateListView(generics.ListAPIView):
         return queryset
 
 
-class SupportStaffListView(generics.ListAPIView):
+class SupportStaffListView(generics.ListCreateAPIView):
     queryset = SupportStaff.objects.all()
     serializer_class = SupportStaffSerializer
     
@@ -269,7 +267,7 @@ class SupportStaffListView(generics.ListAPIView):
             queryset = queryset.filter(department__name=department)
         return queryset
 
-class AdminStaffListView(generics.ListAPIView):
+class AdminStaffListView(generics.ListCreateAPIView):
     queryset = AdminStaff.objects.all()
     serializer_class = AdminStaffSerializer
     
@@ -280,7 +278,7 @@ class AdminStaffListView(generics.ListAPIView):
             queryset = queryset.filter(department__name=department)
         return queryset
 
-class ProfessorListView(generics.ListAPIView):
+class ProfessorListView(generics.ListCreateAPIView):
     queryset = Professor.objects.all()
     serializer_class = ProfessorSerializer
     lookup_field = 'eid'
@@ -292,12 +290,12 @@ class ProfessorListView(generics.ListAPIView):
             queryset = queryset.filter(department__name=department)
         return queryset
 
-class ProfessorViewSet(viewsets.ReadOnlyModelViewSet):
+class ProfessorViewSet(viewsets.ModelViewSet):
     queryset = Professor.objects.all()
     serializer_class = ProfessorSerializer
     lookup_field = 'eid'  
 
-class TeachingStaffListView(generics.ListAPIView):
+class TeachingStaffListView(generics.ListCreateAPIView):
     queryset = TeachingStaff.objects.all()
     serializer_class = TeachingStaffSerializer
     
