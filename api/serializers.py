@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import (Department, DegreeProgram, SupportStaff, 
+from .models import (Department, DegreeProgram,
                    AdminStaff, Professor, Student, Graduate, 
                    TeachingStaff, Textbook, Course, 
                    Section, Undergraduate, HasAsPreq, HasAsAntireq)
@@ -12,12 +12,6 @@ class DepartmentSerializer(serializers.ModelSerializer):
 class DegreeProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = DegreeProgram
-        fields = '__all__'
-
-class SupportStaffSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = SupportStaff
         fields = '__all__'
 
 class AdminStaffSerializer(serializers.ModelSerializer):

@@ -15,7 +15,6 @@ urlpatterns = [
     # ListAPIView paths
     path('graduates/', views.GraduateListView.as_view(), name='graduate-list'),
     path('undergraduates/', views.UndergraduateListView.as_view(), name='undergraduate-list'),
-    path('support-staff/', views.SupportStaffListView.as_view(), name='support-staff-list'),
     path('admin-staff/', views.AdminStaffListView.as_view(), name='admin-staff-list'),
     path('teaching-staff/', views.TeachingStaffListView.as_view(), name='teaching-staff-list'),
     path('prerequisites/<str:course_code>/', views.get_prereqs, name='get_prereqs'),

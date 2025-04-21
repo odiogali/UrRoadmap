@@ -7,14 +7,14 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
-                    Professor, SupportStaff, 
+                    Professor, 
                     AdminStaff, TeachingStaff, HasAsPreq, HasAsAntireq)
 from .serializers import (DepartmentSerializer, DegreeProgramSerializer, 
                          CourseSerializer, 
                          TextbookSerializer, SectionSerializer, 
                          StudentSerializer, GraduateSerializer, 
                          UndergraduateSerializer, 
-                         SupportStaffSerializer, AdminStaffSerializer, 
+                         AdminStaffSerializer, 
                          ProfessorSerializer, TeachingStaffSerializer)
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -274,18 +274,6 @@ class UndergraduateListView(generics.ListCreateAPIView):
             queryset = queryset.filter(credits_completed__gte=int(credits_min))
         if credits_max:
             queryset = queryset.filter(credits_completed__lte=int(credits_max))
-        return queryset
-
-
-class SupportStaffListView(generics.ListCreateAPIView):
-    queryset = SupportStaff.objects.all()
-    serializer_class = SupportStaffSerializer
-    
-    def get_queryset(self):
-        queryset = SupportStaff.objects.all()
-        department = self.request.query_params.get('department')
-        if department:
-            queryset = queryset.filter(department__name=department)
         return queryset
 
 class AdminStaffListView(generics.ListCreateAPIView):

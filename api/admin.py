@@ -4,7 +4,7 @@ from .models import (
      AdminStaff, Course, DegreeProgram,
      Department, Graduate, 
      Professor, Student, 
-     SupportStaff, TeachingStaff, 
+     TeachingStaff, 
      Textbook, Undergraduate
 )
 
@@ -18,4 +18,3 @@ admin.site.register(Undergraduate)
 admin.site.register(TeachingStaff)
 admin.site.register(Textbook)
 admin.site.register(Course)
-admin.site.register(SupportStaff)
