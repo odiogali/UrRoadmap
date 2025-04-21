@@ -48,3 +48,14 @@
 .student-table tr:hover {
     background-color: #333333;
 }
+
+  .add-btn {
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #0077ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  

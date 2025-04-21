@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import "./StudentView.css";
+import AddStudentModal from "./AddStudentModal";
 
 function StudentView() {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8000/api/student/")
@@ -33,6 +35,9 @@ function StudentView() {
   return (
     <div className="student-page">
       <h2 className="student-title">Student Directory</h2>
+      <button onClick={() => setIsModalOpen(true)} className="add-btn">
+        ➕ Add Student
+      </button>
 
       <input
         type="text"
@@ -70,6 +75,11 @@ function StudentView() {
           )}
         </tbody>
       </table>
+      <AddStudentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onStudentAdded={() => window.location.reload()}
+      />
     </div>
   );
 }
