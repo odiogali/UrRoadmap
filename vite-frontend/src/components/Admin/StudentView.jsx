@@ -10,7 +10,8 @@ function StudentView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/student/")
+    setLoading(true);
+    fetch(`http://localhost:8000/api/student/?search=${search}`)
       .then((res) => res.json())
       .then((data) => {
         setStudents(data);
@@ -21,16 +22,15 @@ function StudentView() {
         setError("Failed to load students.");
         setLoading(false);
       });
-  }, []);
+  }, [search]); // now it re-fetches when search changes
 
+  /*
   const filtered = students.filter(
     (s) =>
       `${s.fname} ${s.lname}`.toLowerCase().includes(search.toLowerCase()) ||
       s.student_id.toString().includes(search)
   );
-
-  if (loading) return <p>Loading students...</p>;
-  if (error) return <p>{error}</p>;
+  */
 
   return (
     <div className="student-page">
@@ -58,8 +58,8 @@ function StudentView() {
           </tr>
         </thead>
         <tbody>
-          {filtered.length > 0 ? (
-            filtered.map((s) => (
+          {students.length > 0 ? (
+            students.map((s) => (
               <tr key={s.student_id}>
                 <td>{s.student_id}</td>
                 <td>{s.fname || "—"}</td>

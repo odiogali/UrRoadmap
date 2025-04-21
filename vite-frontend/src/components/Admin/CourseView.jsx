@@ -9,9 +9,15 @@ function CourseView() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8000/api/course/")
-      .then((res) => {
+    const fetchCourses = async () => {
+      try {
+        const url = search
+          ? `http://localhost:8000/api/course/?search=${encodeURIComponent(
+              search
+            )}`
+          : "http://localhost:8000/api/course/";
+
+        const res = await axios.get(url);
         const transformed = res.data.map((course, index) => ({
           id: index,
           code: course.course_code,
@@ -19,22 +25,18 @@ function CourseView() {
           professorId: course.prof || "—",
           department: course.department_name || "—",
         }));
+
         setCourses(transformed);
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error fetching courses:", err);
         setError("Failed to load courses.");
         setLoading(false);
-      });
-  }, []);
+      }
+    };
 
-  const filtered = courses.filter((c) =>
-    c.code.toLowerCase().includes(search.toLowerCase())
-  );
-
-  if (loading) return <p>Loading courses...</p>;
-  if (error) return <p>{error}</p>;
+    fetchCourses();
+  }, [search]); // 🔁 Trigger refetch when search term changes
 
   return (
     <div className="course-page">
@@ -58,8 +60,8 @@ function CourseView() {
           </tr>
         </thead>
         <tbody>
-          {filtered.length > 0 ? (
-            filtered.map((c) => (
+          {courses.length > 0 ? (
+            courses.map((c) => (
               <tr key={c.id}>
                 <td>{c.code}</td>
                 <td>{c.textbook}</td>

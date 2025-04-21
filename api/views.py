@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from django.db.models import Q
 from django.db import models
 from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
                     Professor, SupportStaff, 
@@ -37,6 +39,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         department_id = self.request.query_params.get('department')
         if department_id:
             queryset = queryset.filter(department_id=department_id)
+            
+        search = self.request.query_params.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(
+                Q(course_code__icontains=search) |
+                Q(textbook_isbn__icontains=search)
+            )
         return queryset
 
 @api_view(['GET'])
@@ -206,6 +215,18 @@ class SectionViewSet(viewsets.ReadOnlyModelViewSet):
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get("search", "").strip()
+
+        if search:
+            queryset = queryset.filter(
+                Q(fname__icontains=search) |
+                Q(lname__icontains=search) |
+                Q(student_id__icontains=search)
+            )
+        return queryset
 
 
 class CourseProgressionView(generics.ListAPIView):
