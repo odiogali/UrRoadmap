@@ -10,12 +10,13 @@ CREATE TABLE degree_program (
     Prog_name VARCHAR(50) PRIMARY KEY
 );
 
--- Create specialization table
+-- Create specialization table (simplify to have its own ID)
 CREATE TABLE specialization (
-    SName VARCHAR(50) NOT NULL,
-    Prog_name VARCHAR(50) NOT NULL,
-    PRIMARY KEY (Prog_name, SName),
-    FOREIGN KEY (Prog_name) REFERENCES degree_program (Prog_name)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sname VARCHAR(50) NOT NULL,
+    prog_name VARCHAR(50) NOT NULL,
+    UNIQUE KEY (prog_name, sname),
+    FOREIGN KEY (prog_name) REFERENCES degree_program (prog_name)
 );
 
 -- Create textbook table
@@ -124,16 +125,15 @@ CREATE TABLE graduate (
     FOREIGN KEY (Teaching_id) REFERENCES teaching_staff (EID)
 );
 
--- Create undergraduate table
+-- Create undergraduate table (simplified specialization reference)
 CREATE TABLE undergraduate (
-    Student_id INT PRIMARY KEY,
-    Credits_completed INT,
-    Major VARCHAR(50) NOT NULL DEFAULT 'Computer Science',
-    Specialization_Prog_name VARCHAR(50),
-    Specialization_SName VARCHAR(50),
-    Minor VARCHAR(50),
-    FOREIGN KEY (Student_id) REFERENCES student (Student_id),
-    FOREIGN KEY (Major) REFERENCES degree_program (Prog_name),
-    FOREIGN KEY (Specialization_Prog_name, Specialization_SName) REFERENCES specialization (Prog_name, SName),
-    FOREIGN KEY (Minor) REFERENCES degree_program (Prog_name)
+    student_id INT PRIMARY KEY,
+    credits_completed INT,
+    major VARCHAR(50) NOT NULL DEFAULT 'Computer Science',
+    specialization_id INT NULL,
+    minor VARCHAR(50) NULL,
+    FOREIGN KEY (student_id) REFERENCES student (student_id),
+    FOREIGN KEY (major) REFERENCES degree_program (prog_name),
+    FOREIGN KEY (specialization_id) REFERENCES specialization (id),
+    FOREIGN KEY (minor) REFERENCES degree_program (prog_name)
 );

@@ -114,23 +114,16 @@ class DegreeProgram(models.Model):
         managed = False
         db_table = 'degree_program'
 
-class Specialization(models.Model): 
-    sname = models.CharField(db_column='SName', max_length=50)
-    prog_name = models.ForeignKey(
-        'DegreeProgram',
-        on_delete=models.CASCADE,
-        db_column='Prog_name'
-    )
-
+class Specialization(models.Model):
+    id = models.AutoField(primary_key=True)
+    sname = models.CharField(db_column='sname', max_length=50)
+    program = models.ForeignKey(DegreeProgram, on_delete=models.CASCADE, db_column='prog_name')
+    
     class Meta:
         managed = False
         db_table = 'specialization'
-        unique_together = (('prog_name', 'sname'),)
-
-    @property
-    def pk(self):
-        return (self.prog_name, self.sname)
-
+        unique_together = (('program', 'sname'),)
+    
 class Department(models.Model): 
     dno = models.AutoField(db_column='Dno', primary_key=True)
     dname = models.CharField(db_column='Dname', max_length=50)  
@@ -159,14 +152,15 @@ class Graduate(models.Model):
         managed = False
         db_table = 'graduate'
 
-class Undergraduate(models.Model): 
-    student = models.OneToOneField(Student, models.CASCADE, db_column='Student_id', primary_key=True)  
-    credits_completed = models.IntegerField(db_column='Credits_completed', null=True)  
-
-    major = models.ForeignKey(DegreeProgram, models.SET_DEFAULT, db_column='Major', default="Computer Science")  
-    specialization = models.ForeignKey(Specialization, models.SET_NULL, db_column='Specialization', null=True)
-    minor = models.ForeignKey(DegreeProgram, models.SET_NULL, db_column='Minor', related_name='student_minor_set', null=True)  
-
+class Undergraduate(models.Model):
+    student = models.OneToOneField('Student', models.CASCADE, db_column='student_id', primary_key=True)
+    credits_completed = models.IntegerField(db_column='credits_completed', null=True)
+    major = models.ForeignKey(DegreeProgram, models.SET_DEFAULT, 
+                             db_column='major', default="Computer Science", 
+                             related_name='major_students')
+    specialization = models.ForeignKey(Specialization, models.SET_NULL, db_column='specialization_id', null=True)
+    minor = models.ForeignKey(DegreeProgram, models.SET_NULL, db_column='minor', null=True, related_name='minor_students')
+    
     class Meta:
         managed = False
         db_table = 'undergraduate'
