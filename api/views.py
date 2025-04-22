@@ -28,6 +28,17 @@ class DegreeProgramViewSet(viewsets.ReadOnlyModelViewSet):
 class SectionViewSet(viewsets.ModelViewSet):
     queryset = Section.objects.all()
     serializer_class = SectionSerializer
+    
+    @action(detail=False, methods=['get'], url_path='by-course/(?P<course_code>[^/.]+)')
+    def by_course(self, request, course_code=None):
+        """Get all sections for a specific course code"""
+        if course_code:
+            # Use the proper field name from your model
+            # We need to use the exact field name as in the Section model
+            sections = Section.objects.filter(scourse_code__course_code=course_code)
+            serializer = self.get_serializer(sections, many=True)
+            return Response(serializer.data)
+        return Response({"error": "Course code is required"}, status=400)
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
@@ -203,20 +214,6 @@ def course_graph(request):
 class TextbookViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Textbook.objects.all()
     serializer_class = TextbookSerializer
-
-class SectionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Section.objects.all()
-    serializer_class = SectionSerializer
-    
-    def get_queryset(self):
-        queryset = Section.objects.all()
-        course_id = self.request.query_params.get('course')
-        semester = self.request.query_params.get('semester')
-        if course_id:
-            queryset = queryset.filter(course_id=course_id)
-        if semester:
-            queryset = queryset.filter(semester=semester)
-        return queryset
 
 class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = Employee.objects.all()

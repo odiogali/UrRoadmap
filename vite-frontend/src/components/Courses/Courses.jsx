@@ -8,29 +8,33 @@ function Courses() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [courseSections, setCourseSections] = useState([]);
+  const [loadingSections, setLoadingSections] = useState(false);
 
   useEffect(() => {
     axios
       .get("http://localhost:8000/api/course/")
       .then(async (res) => {
         const rawCourses = res.data;
-
         const enhancedCourses = await Promise.all(
           rawCourses.map(async (course, index) => {
             let profName = "TBA";
             let textbookTitle = null;
             let prerequisites = [];
             let antirequisites = [];
-
             try {
-              const profRes = await axios.get(
-                `http://localhost:8000/api/professors/${course.prof}/`
+              const secRes = await axios.get(
+                `http://localhost:8000/api/sections/by-course/${course.course_code}/`
               );
-              profName = profRes.data.fname + " " + profRes.data.lname;
+              // Extract instructor_name from each object
+              profName = [...new Set(
+                secRes.data.map(section => section.instructor_name)
+              )].join(', ');
+              console.log(profName)
             } catch (err) {
-              console.warn(`Prof ${course.prof} not found`);
+              console.warn(`Prof for ${course.course_code} not found`);
             }
-
             if (course.textbook_isbn) {
               try {
                 const tbRes = await axios.get(
@@ -41,7 +45,6 @@ function Courses() {
                 console.warn(`Textbook ${course.textbook_isbn} not found`);
               }
             }
-
             try {
               const antiRes = await axios.get(
                 `http://localhost:8000/api/antirequisites/${course.course_code}/`
@@ -50,7 +53,6 @@ function Courses() {
             } catch (err) {
               console.warn(`Antireqs for ${course.course_code} not found`);
             }
-
             try {
               const preRes = await axios.get(
                 `http://localhost:8000/api/prerequisites/${course.course_code}/`
@@ -59,7 +61,6 @@ function Courses() {
             } catch (err) {
               console.warn(`Prereqs for ${course.course_code} not found`);
             }
-
             return {
               id: index,
               code: course.course_code,
@@ -83,35 +84,102 @@ function Courses() {
       });
   }, []);
 
+  // Function to fetch sections for a specific course
+  const fetchSectionsForCourse = async (courseCode) => {
+    try {
+      setLoadingSections(true);
+      const response = await axios.get(
+        `http://localhost:8000/api/sections/course/${courseCode}/`
+      );
+      setCourseSections(response.data);
+      setLoadingSections(false);
+    } catch (error) {
+      console.error("Error fetching course sections:", error);
+      setCourseSections([]);
+      setLoadingSections(false);
+    }
+  };
+
+  // Function to handle course selection
+  const handleCourseSelect = (course) => {
+    setSelectedCourse(course);
+    fetchSectionsForCourse(course.code);
+  };
+
+  // Function to go back to the course list
+  const handleBackToCourses = () => {
+    setSelectedCourse(null);
+    setCourseSections([]);
+  };
+
   const filteredCourses = courses.filter(
     (course) =>
       course.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.code?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <p>Loading course...</p>;
+  if (loading) return <p>Loading courses...</p>;
   if (error) return <p>{error}</p>;
 
   return (
     <div className="courses-container">
-      <h2>Available Courses</h2>
-      <input
-        type="text"
-        placeholder="Search courses..."
-        className="search-bar"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+      {selectedCourse ? (
+        <div className="sections-view">
+          <button onClick={handleBackToCourses} className="back-button">
+            &larr; Back to Courses
+          </button>
+          <h2>{selectedCourse.code}: {selectedCourse.title} - Sections</h2>
 
-      <div className="courses-grid">
-        {filteredCourses.length > 0 ? (
-          filteredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))
-        ) : (
-          <p>No course matches your search.</p>
-        )}
-      </div>
+          {loadingSections ? (
+            <p>Loading sections...</p>
+          ) : courseSections.length > 0 ? (
+            <div className="sections-list">
+              <table className="sections-table">
+                <thead>
+                  <tr>
+                    <th>Section ID</th>
+                    <th>Semester</th>
+                    <th>Instructor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courseSections.map((section) => (
+                    <tr key={section.s_id}>
+                      <td>{section.s_id}</td>
+                      <td>{section.semester || 'N/A'}</td>
+                      <td>{section.instructor ? `${section.instructor}` : 'TBA'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p>No sections available for this course.</p>
+          )}
+        </div>
+      ) : (
+        <>
+          <h2>Available Courses</h2>
+          <input
+            type="text"
+            placeholder="Search courses..."
+            className="search-bar"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <div className="courses-grid">
+            {filteredCourses.length > 0 ? (
+              filteredCourses.map((course) => (
+                <div key={course.id} onClick={() => handleCourseSelect(course)}>
+                  <CourseCard course={course} />
+                </div>
+              ))
+            ) : (
+              <p>No course matches your search.</p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

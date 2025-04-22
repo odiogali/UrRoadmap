@@ -65,6 +65,13 @@ ts3.save()
 p3 = Professor(teaching=ts3, research_area="Probability")
 p3.save()
 
+e7 = Employee(eid=1738, fname="Fetty", lname="Demetrius", salary=215000, dno=math)
+e7.save()
+ts7 = TeachingStaff(employee=e7)
+ts7.save()
+p4 = Professor(teaching=ts7, research_area="Probability Theory and Differentials")
+p4.save()
+
 e4 = Employee(eid=1004, fname="Pablo", lname="Hernandez", salary=69000, dno=math)
 ts4 = TeachingStaff(employee=e4)
 e4.save()
