@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (Department, DegreeProgram,
                    AdminStaff, Professor, Student, Graduate, 
                    TeachingStaff, Textbook, Course, 
-                   Section, Undergraduate, HasAsPreq, HasAsAntireq)
+                   Section, Undergraduate, Employee, HasAsPreq, HasAsAntireq)
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,8 +14,17 @@ class DegreeProgramSerializer(serializers.ModelSerializer):
         model = DegreeProgram
         fields = '__all__'
 
-class AdminStaffSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(serializers.ModelSerializer):
+    # Include department details instead of just the ID
+    dno = DepartmentSerializer(read_only=True)
     
+    class Meta:
+        model = Employee
+        fields = ['eid', 'fname', 'lname', 'salary', 'dno']
+
+class AdminStaffSerializer(serializers.ModelSerializer):
+    student = EmployeeSerializer(read_only=True)  # Nested serializer
+
     class Meta:
         model = AdminStaff
         fields = '__all__'
@@ -85,18 +94,15 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = ['student_id', 'fname', 'lname', 'majors', 'minors']
 
 class GraduateSerializer(serializers.ModelSerializer):
-    majors = serializers.StringRelatedField(many=True, read_only=True)
-    minors = serializers.StringRelatedField(many=True, read_only=True)
-    degree_program_name = serializers.CharField(source='degree_program.name', read_only=True)
+    student = StudentSerializer(read_only=True)  # Nested serializer
     
     class Meta:
         model = Graduate
-        fields = ['student_id', 'fname', 'lname', 'student_type', 'degree_program', 
-                'degree_program_name', 'gpa', 'majors', 'minors', 'thesis', 'research_area']
+        fields = ['student', 'thesis_title', 'research_area', 'teaching']
 
 class UndergraduateSerializer(serializers.ModelSerializer):
+    student = StudentSerializer(read_only=True)  # Nested serializer
     
     class Meta:
         model = Undergraduate
-        fields = '__all__'
-
+        fields = ['student', 'credits_completed', 'major', 'specialization', 'minor']

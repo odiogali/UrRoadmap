@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
-                    Professor, 
+                    Professor, Employee,
                     AdminStaff, TeachingStaff, HasAsPreq, HasAsAntireq)
 from .serializers import (DepartmentSerializer, DegreeProgramSerializer, 
                          CourseSerializer, 
@@ -15,7 +15,7 @@ from .serializers import (DepartmentSerializer, DegreeProgramSerializer,
                          StudentSerializer, GraduateSerializer, 
                          UndergraduateSerializer, 
                          AdminStaffSerializer, 
-                         ProfessorSerializer, TeachingStaffSerializer)
+                         ProfessorSerializer, TeachingStaffSerializer, EmployeeSerializer)
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Department.objects.all()
@@ -211,6 +211,10 @@ class SectionViewSet(viewsets.ReadOnlyModelViewSet):
         if semester:
             queryset = queryset.filter(semester=semester)
         return queryset
+
+class EmployeeViewSet(viewsets.ModelViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
