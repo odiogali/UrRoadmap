@@ -18,27 +18,6 @@ class Section(models.Model):
         db_table = 'section'
         unique_together = (('scourse_code', 's_id'),)
 
-class CourseGrade(models.TextChoices):
-    APLUS = "A+", "A+"
-    A = "A", "A"
-    AMINUS = "A-", "A-"
-    BPLUS = "B+", "B+"
-    B = "B", "B"
-    BMINUS = "B-", "B-"
-    CPLUS = "C+", "C+"
-    C = "C", "C"
-    CMINUS = "C-", "C-"
-    DPLUS = "D+", "D+"
-    D = "D", "D"
-    DMINUS = "D-", "D-"
-    F = "F", "F"
-
-class CourseStatus(models.TextChoices):
-    IN_PROGRESS = "IP", "In progress"
-    COMPLETED = "C", "Completed"
-    WITHDRAWN = "W", "Withdrawn"
-    FAILED = "F", "Failed"
-
 class Course(models.Model): 
     course_code = models.CharField(db_column='Course_code', primary_key=True, max_length=10)  
     course_title = models.CharField(db_column='Course_title', max_length=50)
@@ -85,8 +64,30 @@ class HasAsPreq(models.Model):
     def pk(self):
         return (self.course_code, self.prereq_code)
 
+class CourseGrade(models.TextChoices):
+    APLUS = "A+", "A+"
+    A = "A", "A"
+    AMINUS = "A-", "A-"
+    BPLUS = "B+", "B+"
+    B = "B", "B"
+    BMINUS = "B-", "B-"
+    CPLUS = "C+", "C+"
+    C = "C", "C"
+    CMINUS = "C-", "C-"
+    DPLUS = "D+", "D+"
+    D = "D", "D"
+    DMINUS = "D-", "D-"
+    F = "F", "F"
+
+class CourseStatus(models.TextChoices):
+    IN_PROGRESS = "IP", "In progress"
+    COMPLETED = "C", "Completed"
+    WITHDRAWN = "W", "Withdrawn"
+    FAILED = "F", "Failed"
+
 class HasTaken(models.Model): 
-    course_code = models.ForeignKey('Course', models.CASCADE, db_column='Course_code')
+    scourse_code = models.ForeignKey('Course', models.CASCADE, db_column='SCourse_code')
+    s_id = models.IntegerField(db_column='S_ID')
     student = models.ForeignKey('Student', models.CASCADE, db_column='Student_id')
 
     grade = models.CharField(db_column='Course_grade', max_length=2, choices=CourseGrade.choices, null=True)
@@ -95,7 +96,7 @@ class HasTaken(models.Model):
     class Meta:
         managed = False
         db_table = 'has_taken'
-        unique_together = (('course_code', 'student'),)
+        unique_together = (('scourse_code', 's_id', 'student'),)
 
 class Textbook(models.Model): 
     isbn = models.CharField(db_column='ISBN', primary_key=True, max_length=13)  

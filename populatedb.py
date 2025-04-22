@@ -134,9 +134,9 @@ Section(scourse_code=courses[8], s_id=1, semester="Fall", instructor=ts3).save()
 Section(scourse_code=courses[9], s_id=1, semester="Winter", instructor=ts3).save()
 
 # --- HasTaken ---
-HasTaken(course_code=courses[0], student=s1, grade="A", course_status='W').save()
-HasTaken(course_code=courses[4], student=s2, grade="B+", course_status='C').save()
-HasTaken(course_code=courses[8], student=s3, grade="A-", course_status='IP').save()
+HasTaken(scourse_code=courses[0], s_id=1, student=s1, grade="A", course_status='W').save()
+HasTaken(scourse_code=courses[4], s_id=1, student=s2, grade="B+", course_status='C').save()
+HasTaken(scourse_code=courses[8], s_id=1, student=s3, grade="A-", course_status='IP').save()
 
 # --- Prerequisites ---
 HasAsPreq(course_code=courses[3], prereq_code=courses[2]).save()  # CPSC413 ← CPSC301
@@ -153,4 +153,4 @@ HasAsAntireq(course_code=courses[0], antireq_code=courses[5]).save()  # CPSC471 
 HasAsAntireq(course_code=courses[4], antireq_code=courses[9]).save()  # DATA301 ↮ MATH381
 HasAsAntireq(course_code=courses[5], antireq_code=courses[9]).save()  # DATA401 ↮ MATH381
 
-print("Database populated with teaching staff fix and all relations.")
+print("Database populated with data.")

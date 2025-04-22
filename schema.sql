@@ -5,6 +5,16 @@ CREATE TABLE department (
     Manager_id INT
 );
 
+-- Create employee table
+CREATE TABLE employee (
+    EID INT AUTO_INCREMENT PRIMARY KEY,
+    Fname VARCHAR(50) NOT NULL,
+    Lname VARCHAR(50) NOT NULL,
+    Salary INT,
+    Dno INT,
+    FOREIGN KEY (Dno) REFERENCES department (Dno)
+);
+
 -- Create degree_program table
 CREATE TABLE degree_program (
     Prog_name VARCHAR(50) PRIMARY KEY
@@ -62,29 +72,6 @@ CREATE TABLE student (
     Lname VARCHAR(50) NOT NULL
 );
 
--- Create has_taken table
-CREATE TABLE has_taken (
-    Course_code VARCHAR(10) NOT NULL,
-    Student_id INT NOT NULL,
-    Course_grade VARCHAR(2),
-    Course_status VARCHAR(2),
-    PRIMARY KEY (Course_code, Student_id),
-    FOREIGN KEY (Course_code) REFERENCES course (Course_code),
-    FOREIGN KEY (Student_id) REFERENCES student (Student_id),
-    CHECK (Course_grade IN ('A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F')),
-    CHECK (Course_status IN ('IP', 'C', 'W', 'F'))
-);
-
--- Create employee table
-CREATE TABLE employee (
-    EID INT AUTO_INCREMENT PRIMARY KEY,
-    Fname VARCHAR(50) NOT NULL,
-    Lname VARCHAR(50) NOT NULL,
-    Salary INT,
-    Dno INT,
-    FOREIGN KEY (Dno) REFERENCES department (Dno)
-);
-
 -- Create teaching_staff table
 CREATE TABLE teaching_staff (
     EID INT PRIMARY KEY,
@@ -100,6 +87,17 @@ CREATE TABLE section (
     PRIMARY KEY (SCourse_code, S_ID),
     FOREIGN KEY (SCourse_code) REFERENCES course (Course_code),
     FOREIGN KEY (Instructor_id) REFERENCES teaching_staff (EID)
+);
+-- Create has_taken table
+CREATE TABLE has_taken (
+    SCourse_code VARCHAR(10) NOT NULL,
+    S_ID INT NOT NULL,
+    Student_id INT NOT NULL,
+    Course_grade VARCHAR(2) NULL,
+    Course_status VARCHAR(2) NULL,
+    PRIMARY KEY (SCourse_code, S_ID, Student_id),
+    FOREIGN KEY (SCourse_code, S_ID) REFERENCES section(SCourse_code, S_ID),
+    FOREIGN KEY (Student_id) REFERENCES student(Student_id)
 );
 
 -- Create admin_staff table
