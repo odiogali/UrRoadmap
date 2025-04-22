@@ -23,8 +23,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = ['eid', 'fname', 'lname', 'salary', 'dno']
 
 class AdminStaffSerializer(serializers.ModelSerializer):
-    student = EmployeeSerializer(read_only=True)  # Nested serializer
-
+    employee = EmployeeSerializer(read_only=True)  # Nested serializer
+    
     class Meta:
         model = AdminStaff
         fields = '__all__'
@@ -36,12 +36,28 @@ class ProfessorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TeachingStaffSerializer(serializers.ModelSerializer):
-    professor_details = ProfessorSerializer(source='professor', read_only=True)
-    graduate_details = serializers.SerializerMethodField()
+    employee = EmployeeSerializer(read_only=True)  # Include full employee details
+    professor_details = serializers.SerializerMethodField()
+    graduate_students = serializers.SerializerMethodField()
     
     class Meta:
         model = TeachingStaff
-        fields = '__all__'
+        fields = ['employee', 'professor_details', 'graduate_students']
+    
+    def get_professor_details(self, obj):
+        # Check if this teaching staff is a professor
+        try:
+            professor = Professor.objects.get(teaching=obj)
+            return ProfessorSerializer(professor).data
+        except Professor.DoesNotExist:
+            return None
+    
+    def get_graduate_students(self, obj):
+        # Get all graduate students supervised by this teaching staff
+        graduates = Graduate.objects.filter(teaching=obj)
+        if graduates.exists():
+            return GraduateSerializer(graduates, many=True).data
+        return []
     
 
 class TextbookSerializer(serializers.ModelSerializer):

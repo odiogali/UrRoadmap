@@ -92,19 +92,20 @@ for c in courses:
 s1 = Student(student_id=2001, fname="Ali", lname="Khan")
 s2 = Student(student_id=2002, fname="Maria", lname="Lopez")
 s3 = Student(student_id=2003, fname="John", lname="Chen")
-s4 = Student(student_id=2004, fname="Pablo", lname="Hernandez")
 s1.save()
 s2.save()
 s3.save()
-s4.save()
 
 # --- Undergraduates ---
 Undergraduate(student=s1, credits_completed=45, major=prog_cs, minor=prog_ds).save()
 Undergraduate(student=s2, credits_completed=78, major=prog_ds, minor=prog_math).save()
 
 # --- Graduates ---
-Graduate(student=s3, thesis_title="Advanced Calculus in AI", research_area="Mathematics & AI", teaching=ts4).save()
-Graduate(student=s4, thesis_title="Lambda Calculus Uses and Interpretations", research_area="Math and CS", teaching=None).save()
+Graduate(student=s3, thesis_title="Advanced Calculus in AI", research_area="Mathematics & AI", teaching=None).save()
+
+s4 = Student(student_id=2004, fname="Pablo", lname="Hernandez")
+s4.save()
+Graduate(student=s4, thesis_title="Lambda Calculus Uses and Interpretations", research_area="Math and CS", teaching=ts4).save()
 
 # --- Admin Staff ---
 e5 = Employee(eid=3001, fname="Bob", lname="Smith", salary=55000, dno=cs)
