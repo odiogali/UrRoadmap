@@ -1,11 +1,15 @@
 import "./CourseCard.css";
 
 function CourseCard({ course }) {
+  console.log(course); // See what fields exist
+
   return (
     <div className="course-card">
       <h3>{course.code}</h3>
       <p className="course-title">{course.title}</p>
-      <p className="textbook"><strong>Textbook:</strong> {course.textbook}</p>
+      <p className="textbook">
+        <strong>Textbook:</strong> {course.textbook}
+      </p>
 
       {course.prerequisites && course.prerequisites.length > 0 ? (
         <div className="prereqs">

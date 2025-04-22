@@ -7,7 +7,64 @@
     transition: 0.2s ease;
     font-size: 0.95rem;
     color: white; /* White text for readability */
+}.course-card {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-size: 1rem;
+  color: #f9f9f9;
+  margin-bottom: 1.25rem;
 }
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.course-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+  color: #ffffff;
+}
+
+.course-title {
+  font-size: 1.0rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #f1f1f1;
+}
+
+.textbook,
+.instructor,
+.prereqs,
+.antireqs {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #cccccc;
+}
+
+.course-card strong {
+  color: #ffdddd;
+}
+
+@media (max-width: 768px) {
+  .course-card {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .course-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .course-title {
+    font-size: 1rem;
+  }
+}
+
   
 .course-card:hover {
     transform: translateY(-3px);

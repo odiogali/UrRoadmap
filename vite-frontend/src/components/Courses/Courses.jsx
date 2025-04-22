@@ -10,7 +10,8 @@ function Courses() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    axios.get('http://localhost:8000/api/course/')
+    axios
+      .get("http://localhost:8000/api/course/")
       .then(async (res) => {
         const rawCourses = res.data;
 
@@ -22,7 +23,9 @@ function Courses() {
             let antirequisites = [];
 
             try {
-              const profRes = await axios.get(`http://localhost:8000/api/professors/${course.prof}/`);
+              const profRes = await axios.get(
+                `http://localhost:8000/api/professors/${course.prof}/`
+              );
               profName = profRes.data.fname + " " + profRes.data.lname;
             } catch (err) {
               console.warn(`Prof ${course.prof} not found`);
@@ -30,7 +33,9 @@ function Courses() {
 
             if (course.textbook_isbn) {
               try {
-                const tbRes = await axios.get(`http://localhost:8000/api/textbook/${course.textbook_isbn}/`);
+                const tbRes = await axios.get(
+                  `http://localhost:8000/api/textbook/${course.textbook_isbn}/`
+                );
                 textbookTitle = tbRes.data.title;
               } catch (err) {
                 console.warn(`Textbook ${course.textbook_isbn} not found`);
@@ -38,15 +43,19 @@ function Courses() {
             }
 
             try {
-              const antiRes = await axios.get(`http://localhost:8000/api/antirequisites/${course.course_code}/`);
-              antirequisites = antiRes.data.map(obj => obj.antireq_code); // Extract the course codes
+              const antiRes = await axios.get(
+                `http://localhost:8000/api/antirequisites/${course.course_code}/`
+              );
+              antirequisites = antiRes.data.map((obj) => obj.antireq_code); // Extract the course codes
             } catch (err) {
               console.warn(`Antireqs for ${course.course_code} not found`);
             }
 
             try {
-              const preRes = await axios.get(`http://localhost:8000/api/prerequisites/${course.course_code}/`);
-              prerequisites = preRes.data.map(obj => obj.prereq_code); // Extract the course codes
+              const preRes = await axios.get(
+                `http://localhost:8000/api/prerequisites/${course.course_code}/`
+              );
+              prerequisites = preRes.data.map((obj) => obj.prereq_code); // Extract the course codes
             } catch (err) {
               console.warn(`Prereqs for ${course.course_code} not found`);
             }
@@ -54,16 +63,16 @@ function Courses() {
             return {
               id: index,
               code: course.course_code,
-              title: `${course.course_code}`,
+              title: course.course_title,
               textbook: textbookTitle
                 ? `${textbookTitle}`
                 : "No textbook assigned.",
               instructor: profName,
               prerequisites: prerequisites,
-              antirequisites: antirequisites
-            }
+              antirequisites: antirequisites,
+            };
           })
-        )
+        );
         setCourses(enhancedCourses);
         setLoading(false);
       })
