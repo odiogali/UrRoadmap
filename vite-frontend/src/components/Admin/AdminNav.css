@@ -22,6 +22,14 @@
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
     letter-spacing: 0.5px;
   }
+
+  .logo-black {
+    color: #333;
+  }
+  
+  .logo-red {
+    color: #d6001c;
+  }
   
   .topbar-links {
     display: flex;

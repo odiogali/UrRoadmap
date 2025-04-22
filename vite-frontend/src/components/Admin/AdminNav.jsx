@@ -12,9 +12,11 @@ function AdminNav() {
   return (
     <nav className="topbar">
       <div className="topbar-left">
-        <h1 className="logo">Your Roadmap</h1>
+        <h1 className="logo">
+          <span className="logo-black">Your</span>
+          <span className="logo-red">Roadmap</span>
+        </h1>
       </div>
-
       <div className="topbar-links">
         <Link to="/admin" className="topbar-link">
           Dashboard
