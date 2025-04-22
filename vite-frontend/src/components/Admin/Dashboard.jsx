@@ -350,9 +350,11 @@ function GraduateStudentForm() {
 function CourseForm() {
   const [formData, setFormData] = useState({
     course_code: "",
+    course_title: "",
     textbook_isbn: "",
-    prof: "", // Changed from prof_id
     dno: "",
+    prerequisites: [],
+    antirequisites: [],
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -387,62 +389,56 @@ function CourseForm() {
     setErrors({});
 
     try {
-      const response = await fetch("/api/course/", {
+      // Create the course
+      const courseResponse = await fetch("/api/course/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
-          // Make textbook_isbn null if empty
-          textbook_isbn:
-            formData.textbook_isbn.trim() === ""
-              ? null
-              : formData.textbook_isbn,
+          course_code: formData.course_code,
+          course_title: formData.course_title,
+          textbook_isbn: formData.textbook_isbn || null,
+          dno: formData.dno,
         }),
       });
 
-      if (response.ok) {
-        alert("Course added successfully!");
-        setFormData({
-          course_code: "",
-          textbook_isbn: "",
-          prof: "",
-          dno: "",
+      if (!courseResponse.ok) throw new Error("Failed to create course");
+
+      // Add prerequisites
+      for (const prereq of formData.prerequisites) {
+        await fetch("/api/has_as_preq/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            course_code: formData.course_code,
+            prereq_code: prereq,
+          }),
         });
-      } else {
-        const errorData = await response.json();
-
-        // Handle specific error cases
-        if (errorData.detail) {
-          // Generic error message
-          alert(`Error: ${errorData.detail}`);
-        } else {
-          // Field-specific errors
-          const newErrors = {};
-
-          if (errorData.prof) {
-            newErrors.prof = "Professor ID does not exist";
-          }
-
-          if (errorData.dno) {
-            newErrors.dno = "Department number does not exist";
-          }
-
-          if (errorData.textbook_isbn) {
-            newErrors.textbook_isbn = "Textbook ISBN is not valid";
-          }
-
-          setErrors(newErrors);
-
-          if (Object.keys(newErrors).length === 0) {
-            alert("Failed to add course: " + JSON.stringify(errorData));
-          }
-        }
       }
+
+      // Add antirequisites
+      for (const antireq of formData.antirequisites) {
+        await fetch("/api/has_as_antireq/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            course_code: formData.course_code,
+            antireq_code: antireq,
+          }),
+        });
+      }
+
+      alert("Course added with prerequisites and antirequisites!");
+      setFormData({
+        course_code: "",
+        course_title: "",
+        textbook_isbn: "",
+        dno: "",
+        prerequisites: [],
+        antirequisites: [],
+      });
     } catch (error) {
       console.error("Error:", error);
-      alert("Network error while submitting the form");
+      alert("An error occurred while submitting the course form");
     } finally {
       setIsSubmitting(false);
     }
@@ -514,6 +510,40 @@ function CourseForm() {
             )}
           </div>
         </div>
+        <FormField
+          label="Course Title"
+          name="course_title"
+          type="text"
+          value={formData.course_title}
+          onChange={handleChange}
+          required
+        />
+
+        <FormField
+          label="Prerequisites (comma-separated course codes)"
+          name="prerequisites"
+          type="text"
+          value={formData.prerequisites.join(",")}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              prerequisites: e.target.value.split(",").map((c) => c.trim()),
+            }))
+          }
+        />
+
+        <FormField
+          label="Antirequisites (comma-separated course codes)"
+          name="antirequisites"
+          type="text"
+          value={formData.antirequisites.join(",")}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              antirequisites: e.target.value.split(",").map((c) => c.trim()),
+            }))
+          }
+        />
 
         <div className="pt-4">
           <button
