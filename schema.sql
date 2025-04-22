@@ -80,11 +80,12 @@ CREATE TABLE teaching_staff (
 
 -- Create section table
 CREATE TABLE section (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     SCourse_code VARCHAR(10) NOT NULL,
     S_ID INT NOT NULL,
     Semester VARCHAR(6),
     Instructor_id INT,
-    PRIMARY KEY (SCourse_code, S_ID),
+    UNIQUE KEY unique_scourse_sid (SCourse_code, S_ID),
     FOREIGN KEY (SCourse_code) REFERENCES course (Course_code),
     FOREIGN KEY (Instructor_id) REFERENCES teaching_staff (EID)
 );

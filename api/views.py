@@ -7,10 +7,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
-                    Professor, Employee,
+                    Professor, Employee, Section,
                     AdminStaff, TeachingStaff, HasAsPreq, HasAsAntireq)
 from .serializers import (DepartmentSerializer, DegreeProgramSerializer, 
-                         CourseSerializer, 
+                         CourseSerializer, SectionSerializer,
                          TextbookSerializer, SectionSerializer, 
                          StudentSerializer, GraduateSerializer, 
                          UndergraduateSerializer, 
@@ -24,6 +24,10 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
 class DegreeProgramViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DegreeProgram.objects.all()
     serializer_class = DegreeProgramSerializer
+
+class SectionViewSet(viewsets.ModelViewSet):
+    queryset = Section.objects.all()
+    serializer_class = SectionSerializer
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
@@ -315,7 +319,7 @@ class ProfessorListView(generics.ListCreateAPIView):
 class ProfessorViewSet(viewsets.ModelViewSet):
     queryset = Professor.objects.all()
     serializer_class = ProfessorSerializer
-    lookup_field = 'eid'  
+    lookup_field = 'teaching_id'  
 
 class TeachingStaffListView(generics.ListCreateAPIView):
     queryset = TeachingStaff.objects.all()
@@ -331,3 +335,8 @@ class TeachingStaffListView(generics.ListCreateAPIView):
                 models.Q(graduate_student__majors__name=department)
             )
         return queryset
+
+class TeachingStaffDetailView(generics.RetrieveAPIView):
+    queryset = TeachingStaff.objects.all()
+    serializer_class = TeachingStaffSerializer
+    lookup_field = 'employee_id'

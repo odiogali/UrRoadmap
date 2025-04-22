@@ -10,6 +10,7 @@ router.register(r'textbook', views.TextbookViewSet)
 router.register(r'student', views.StudentViewSet)
 router.register(r'employees', views.EmployeeViewSet)
 router.register(r'professors', views.ProfessorViewSet)
+router.register(r'sections', views.SectionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -17,6 +18,7 @@ urlpatterns = [
     path('graduates/', views.GraduateListView.as_view(), name='graduate-list'),
     path('undergraduates/', views.UndergraduateListView.as_view(), name='undergraduate-list'),
     path('admin-staff/', views.AdminStaffListView.as_view(), name='admin-staff-list'),
+    path('teaching-staff/<str:employee_id>/', views.TeachingStaffDetailView.as_view(), name='teaching-detail'),
     path('teaching-staff/', views.TeachingStaffListView.as_view(), name='teaching-staff-list'),
     path('prerequisites/<str:course_code>/', views.get_prereqs, name='get_prereqs'),
     path('antirequisites/<str:course_code>/', views.get_antireqs, name='get_antireqs'),

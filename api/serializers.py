@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (Department, DegreeProgram,
                    AdminStaff, Professor, Student, Graduate, 
-                   TeachingStaff, Textbook, Course, 
+                   TeachingStaff, Textbook, Course, Section,
                    Section, Undergraduate, Employee, HasAsPreq, HasAsAntireq)
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -101,15 +101,20 @@ class CourseSerializer(serializers.ModelSerializer):
         antireqs = obj.hasasantireq_course_code_set.select_related('antireq_code')
         return AntirequisiteSerializer([a.antireq_code for a in antireqs], many=True).data
 
-
 class SectionSerializer(serializers.ModelSerializer):
-    course_details = CourseSerializer(source='course', read_only=True)
     instructor_name = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Section
-        fields = '__all__'
-    
+        fields = ['id', 'scourse_code', 's_id', 'semester', 'instructor', 'instructor_name']
+
+    def get_instructor_name(self, obj):
+        if obj.instructor and obj.instructor.employee:
+            first = obj.instructor.employee.fname
+            last = obj.instructor.employee.lname
+            return f"{first} {last}"
+        return None
+
 
 class StudentSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()

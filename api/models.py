@@ -8,6 +8,7 @@
 from django.db import models
 
 class Section(models.Model): 
+    id = models.AutoField(primary_key=True)
     scourse_code = models.ForeignKey('Course', models.CASCADE, db_column='SCourse_code')
     s_id = models.IntegerField(db_column='S_ID')
     semester = models.CharField(db_column='Semester', max_length=6, null=True)
