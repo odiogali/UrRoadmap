@@ -1,41 +1,42 @@
-import { useState } from 'react';
-import { User, BookOpen, Users } from 'lucide-react';
+import { useState } from "react";
+import { User, BookOpen, Users } from "lucide-react";
+import "./Dashboard.css";
 
 // Main Dashboard Component
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('students');
+  const [activeTab, setActiveTab] = useState("students");
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">University Management System</h1>
+    <div className="dashboard-container">
+      <h1 className="dashboard-title">University Management System</h1>
 
       {/* Tab Navigation */}
-      <div className="flex border-b mb-6">
+      <div className="tabs-container">
         <TabButton
-          active={activeTab === 'students'}
-          onClick={() => setActiveTab('students')}
-          icon={<User className="w-4 h-4 mr-2" />}
+          active={activeTab === "students"}
+          onClick={() => setActiveTab("students")}
+          icon={<User className="icon" />}
           label="Students"
         />
         <TabButton
-          active={activeTab === 'courses'}
-          onClick={() => setActiveTab('courses')}
-          icon={<BookOpen className="w-4 h-4 mr-2" />}
+          active={activeTab === "courses"}
+          onClick={() => setActiveTab("courses")}
+          icon={<BookOpen className="icon" />}
           label="Courses"
         />
         <TabButton
-          active={activeTab === 'faculty'}
-          onClick={() => setActiveTab('faculty')}
-          icon={<Users className="w-4 h-4 mr-2" />}
+          active={activeTab === "faculty"}
+          onClick={() => setActiveTab("faculty")}
+          icon={<Users className="icon" />}
           label="Faculty"
         />
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        {activeTab === 'students' && <StudentForms />}
-        {activeTab === 'courses' && <CourseForm />}
-        {activeTab === 'faculty' && <FacultyForms />}
+      <div className="tab-content">
+        {activeTab === "students" && <StudentForms />}
+        {activeTab === "courses" && <CourseForm />}
+        {activeTab === "faculty" && <FacultyForms />}
       </div>
     </div>
   );
@@ -46,10 +47,7 @@ function TabButton({ active, onClick, icon, label }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center px-4 py-2 border-b-2 font-medium text-sm ${active
-        ? 'border-blue-500 text-blue-600'
-        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-        }`}
+      className={`tab-button ${active ? "active" : "inactive"}`}
     >
       {icon}
       {label}
@@ -59,7 +57,7 @@ function TabButton({ active, onClick, icon, label }) {
 
 // Student Forms Component
 function StudentForms() {
-  const [studentType, setStudentType] = useState('undergraduate');
+  const [studentType, setStudentType] = useState("undergraduate");
 
   const handleStudentTypeChange = (e) => {
     setStudentType(e.target.value);
@@ -67,16 +65,18 @@ function StudentForms() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Student Registration</h2>
+      <h2 className="tab-section-title">Student Registration</h2>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Student Type</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Student Type
+        </label>
         <div className="flex gap-4">
           <label className="inline-flex items-center">
             <input
               type="radio"
               value="undergraduate"
-              checked={studentType === 'undergraduate'}
+              checked={studentType === "undergraduate"}
               onChange={handleStudentTypeChange}
               className="h-4 w-4 text-blue-600"
             />
@@ -86,7 +86,7 @@ function StudentForms() {
             <input
               type="radio"
               value="graduate"
-              checked={studentType === 'graduate'}
+              checked={studentType === "graduate"}
               onChange={handleStudentTypeChange}
               className="h-4 w-4 text-blue-600"
             />
@@ -95,7 +95,11 @@ function StudentForms() {
         </div>
       </div>
 
-      {studentType === 'undergraduate' ? <UndergraduateStudentForm /> : <GraduateStudentForm />}
+      {studentType === "undergraduate" ? (
+        <UndergraduateStudentForm />
+      ) : (
+        <GraduateStudentForm />
+      )}
     </div>
   );
 }
@@ -103,49 +107,49 @@ function StudentForms() {
 // Undergraduate Student Form
 function UndergraduateStudentForm() {
   const [formData, setFormData] = useState({
-    student_id: '',
-    fname: '',
-    lname: '',
-    major: '',
-    minor: '',
-    credits_completed: ''
+    student_id: "",
+    fname: "",
+    lname: "",
+    major: "",
+    minor: "",
+    credits_completed: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/students/undergraduate/', {
-        method: 'POST',
+      const response = await fetch("/api/students/undergraduate/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        alert('Undergraduate student added successfully!');
+        alert("Undergraduate student added successfully!");
         setFormData({
-          student_id: '',
-          fname: '',
-          lname: '',
-          major: '',
-          minor: '',
-          credits_completed: ''
+          student_id: "",
+          fname: "",
+          lname: "",
+          major: "",
+          minor: "",
+          credits_completed: "",
         });
       } else {
-        alert('Failed to add student');
+        alert("Failed to add student");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred while submitting the form');
+      console.error("Error:", error);
+      alert("An error occurred while submitting the form");
     }
   };
 
@@ -215,53 +219,53 @@ function UndergraduateStudentForm() {
 // Graduate Student Form
 function GraduateStudentForm() {
   const [formData, setFormData] = useState({
-    student_id: '',
-    fname: '',
-    lname: '',
-    major: '',
-    minor: '',
-    thesis_title: '',
-    research_area: '',
-    teaching_id: ''
+    student_id: "",
+    fname: "",
+    lname: "",
+    major: "",
+    minor: "",
+    thesis_title: "",
+    research_area: "",
+    teaching_id: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/students/graduate/', {
-        method: 'POST',
+      const response = await fetch("/api/students/graduate/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        alert('Graduate student added successfully!');
+        alert("Graduate student added successfully!");
         setFormData({
-          student_id: '',
-          fname: '',
-          lname: '',
-          major: '',
-          minor: '',
-          thesis_title: '',
-          research_area: '',
-          teaching_id: ''
+          student_id: "",
+          fname: "",
+          lname: "",
+          major: "",
+          minor: "",
+          thesis_title: "",
+          research_area: "",
+          teaching_id: "",
         });
       } else {
-        alert('Failed to add student');
+        alert("Failed to add student");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred while submitting the form');
+      console.error("Error:", error);
+      alert("An error occurred while submitting the form");
     }
   };
 
@@ -345,32 +349,32 @@ function GraduateStudentForm() {
 
 function CourseForm() {
   const [formData, setFormData] = useState({
-    course_code: '',
-    textbook_isbn: '',
-    prof: '',  // Changed from prof_id
-    dno: ''
+    course_code: "",
+    textbook_isbn: "",
+    prof: "", // Changed from prof_id
+    dno: "",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user types in a field
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: null
+        [name]: null,
       }));
     }
   };
 
   const validateTextbookISBN = (isbn) => {
     // Allow empty values since textbook is optional
-    if (!isbn || isbn.trim() === '') {
+    if (!isbn || isbn.trim() === "") {
       return true;
     }
     // Add any additional ISBN validation logic here if needed
@@ -383,25 +387,28 @@ function CourseForm() {
     setErrors({});
 
     try {
-      const response = await fetch('/api/course/', {
-        method: 'POST',
+      const response = await fetch("/api/course/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...formData,
           // Make textbook_isbn null if empty
-          textbook_isbn: formData.textbook_isbn.trim() === '' ? null : formData.textbook_isbn
-        })
+          textbook_isbn:
+            formData.textbook_isbn.trim() === ""
+              ? null
+              : formData.textbook_isbn,
+        }),
       });
 
       if (response.ok) {
-        alert('Course added successfully!');
+        alert("Course added successfully!");
         setFormData({
-          course_code: '',
-          textbook_isbn: '',
-          prof: '',
-          dno: ''
+          course_code: "",
+          textbook_isbn: "",
+          prof: "",
+          dno: "",
         });
       } else {
         const errorData = await response.json();
@@ -415,27 +422,27 @@ function CourseForm() {
           const newErrors = {};
 
           if (errorData.prof) {
-            newErrors.prof = 'Professor ID does not exist';
+            newErrors.prof = "Professor ID does not exist";
           }
 
           if (errorData.dno) {
-            newErrors.dno = 'Department number does not exist';
+            newErrors.dno = "Department number does not exist";
           }
 
           if (errorData.textbook_isbn) {
-            newErrors.textbook_isbn = 'Textbook ISBN is not valid';
+            newErrors.textbook_isbn = "Textbook ISBN is not valid";
           }
 
           setErrors(newErrors);
 
           if (Object.keys(newErrors).length === 0) {
-            alert('Failed to add course: ' + JSON.stringify(errorData));
+            alert("Failed to add course: " + JSON.stringify(errorData));
           }
         }
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Network error while submitting the form');
+      console.error("Error:", error);
+      alert("Network error while submitting the form");
     } finally {
       setIsSubmitting(false);
     }
@@ -443,7 +450,7 @@ function CourseForm() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Course Registration</h2>
+      <h2 className="tab-section-title">Course Registration</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -471,7 +478,9 @@ function CourseForm() {
               error={errors.textbook_isbn}
             />
             {errors.textbook_isbn && (
-              <p className="text-red-500 text-sm mt-1">{errors.textbook_isbn}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.textbook_isbn}
+              </p>
             )}
           </div>
 
@@ -512,7 +521,7 @@ function CourseForm() {
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Adding Course...' : 'Add Course'}
+            {isSubmitting ? "Adding Course..." : "Add Course"}
           </button>
         </div>
       </form>
@@ -522,7 +531,7 @@ function CourseForm() {
 
 // Faculty Forms Component
 function FacultyForms() {
-  const [facultyType, setFacultyType] = useState('professor');
+  const [facultyType, setFacultyType] = useState("professor");
 
   const handleFacultyTypeChange = (e) => {
     setFacultyType(e.target.value);
@@ -530,16 +539,18 @@ function FacultyForms() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Faculty Registration</h2>
+      <h2 className="tab-section-title">Faculty Registration</h2>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Faculty Type</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Faculty Type
+        </label>
         <div className="flex flex-wrap gap-4">
           <label className="inline-flex items-center">
             <input
               type="radio"
               value="professor"
-              checked={facultyType === 'professor'}
+              checked={facultyType === "professor"}
               onChange={handleFacultyTypeChange}
               className="h-4 w-4 text-blue-600"
             />
@@ -549,7 +560,7 @@ function FacultyForms() {
             <input
               type="radio"
               value="adminStaff"
-              checked={facultyType === 'adminStaff'}
+              checked={facultyType === "adminStaff"}
               onChange={handleFacultyTypeChange}
               className="h-4 w-4 text-blue-600"
             />
@@ -559,7 +570,7 @@ function FacultyForms() {
             <input
               type="radio"
               value="supportStaff"
-              checked={facultyType === 'supportStaff'}
+              checked={facultyType === "supportStaff"}
               onChange={handleFacultyTypeChange}
               className="h-4 w-4 text-blue-600"
             />
@@ -569,7 +580,7 @@ function FacultyForms() {
             <input
               type="radio"
               value="teachingStaff"
-              checked={facultyType === 'teachingStaff'}
+              checked={facultyType === "teachingStaff"}
               onChange={handleFacultyTypeChange}
               className="h-4 w-4 text-blue-600"
             />
@@ -578,10 +589,10 @@ function FacultyForms() {
         </div>
       </div>
 
-      {facultyType === 'professor' && <ProfessorForm />}
-      {facultyType === 'adminStaff' && <AdminStaffForm />}
-      {facultyType === 'supportStaff' && <SupportStaffForm />}
-      {facultyType === 'teachingStaff' && <TeachingStaffForm />}
+      {facultyType === "professor" && <ProfessorForm />}
+      {facultyType === "adminStaff" && <AdminStaffForm />}
+      {facultyType === "supportStaff" && <SupportStaffForm />}
+      {facultyType === "teachingStaff" && <TeachingStaffForm />}
     </div>
   );
 }
@@ -589,51 +600,51 @@ function FacultyForms() {
 // Professor Form
 function ProfessorForm() {
   const [formData, setFormData] = useState({
-    eid: '',
-    fname: '',
-    lname: '',
-    salary: '',
-    dno: '',
-    research_area: '',
-    teaching_id: ''
+    eid: "",
+    fname: "",
+    lname: "",
+    salary: "",
+    dno: "",
+    research_area: "",
+    teaching_id: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/professors/', {
-        method: 'POST',
+      const response = await fetch("/api/professors/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        alert('Professor added successfully!');
+        alert("Professor added successfully!");
         setFormData({
-          eid: '',
-          fname: '',
-          lname: '',
-          salary: '',
-          dno: '',
-          research_area: '',
-          teaching_id: ''
+          eid: "",
+          fname: "",
+          lname: "",
+          salary: "",
+          dno: "",
+          research_area: "",
+          teaching_id: "",
         });
       } else {
-        alert('Failed to add professor');
+        alert("Failed to add professor");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred while submitting the form');
+      console.error("Error:", error);
+      alert("An error occurred while submitting the form");
     }
   };
 
@@ -711,47 +722,47 @@ function ProfessorForm() {
 // Admin Staff Form
 function AdminStaffForm() {
   const [formData, setFormData] = useState({
-    eid: '',
-    fname: '',
-    lname: '',
-    salary: '',
-    dno: ''
+    eid: "",
+    fname: "",
+    lname: "",
+    salary: "",
+    dno: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/admin-staff/', {
-        method: 'POST',
+      const response = await fetch("/api/admin-staff/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        alert('Admin staff added successfully!');
+        alert("Admin staff added successfully!");
         setFormData({
-          eid: '',
-          fname: '',
-          lname: '',
-          salary: '',
-          dno: ''
+          eid: "",
+          fname: "",
+          lname: "",
+          salary: "",
+          dno: "",
         });
       } else {
-        alert('Failed to add admin staff');
+        alert("Failed to add admin staff");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred while submitting the form');
+      console.error("Error:", error);
+      alert("An error occurred while submitting the form");
     }
   };
 
@@ -814,47 +825,47 @@ function AdminStaffForm() {
 // Support Staff Form
 function SupportStaffForm() {
   const [formData, setFormData] = useState({
-    eid: '',
-    fname: '',
-    lname: '',
-    salary: '',
-    dno: ''
+    eid: "",
+    fname: "",
+    lname: "",
+    salary: "",
+    dno: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/support-staff/', {
-        method: 'POST',
+      const response = await fetch("/api/support-staff/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        alert('Support staff added successfully!');
+        alert("Support staff added successfully!");
         setFormData({
-          eid: '',
-          fname: '',
-          lname: '',
-          salary: '',
-          dno: ''
+          eid: "",
+          fname: "",
+          lname: "",
+          salary: "",
+          dno: "",
         });
       } else {
-        alert('Failed to add support staff');
+        alert("Failed to add support staff");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred while submitting the form');
+      console.error("Error:", error);
+      alert("An error occurred while submitting the form");
     }
   };
 
@@ -917,39 +928,39 @@ function SupportStaffForm() {
 // Teaching Staff Form
 function TeachingStaffForm() {
   const [formData, setFormData] = useState({
-    teaching_id: ''
+    teaching_id: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/teaching-staff/', {
-        method: 'POST',
+      const response = await fetch("/api/teaching-staff/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        alert('Teaching staff added successfully!');
+        alert("Teaching staff added successfully!");
         setFormData({
-          teaching_id: ''
+          teaching_id: "",
         });
       } else {
-        alert('Failed to add teaching staff');
+        alert("Failed to add teaching staff");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred while submitting the form');
+      console.error("Error:", error);
+      alert("An error occurred while submitting the form");
     }
   };
 
@@ -982,7 +993,10 @@ function TeachingStaffForm() {
 function FormField({ label, name, type, value, onChange, required = false }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input

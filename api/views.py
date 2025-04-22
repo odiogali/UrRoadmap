@@ -225,6 +225,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         search = self.request.query_params.get("search", "").strip()
+        student_type = self.request.query_params.get("type", "").strip().lower()
 
         if search:
             queryset = queryset.filter(
@@ -232,6 +233,12 @@ class StudentViewSet(viewsets.ModelViewSet):
                 Q(lname__icontains=search) |
                 Q(student_id__icontains=search)
             )
+            
+        if student_type == "undergraduate":
+            queryset = queryset.filter(undergraduate__isnull=False)
+        elif student_type == "graduate":
+            queryset = queryset.filter(graduate__isnull=False)
+            
         return queryset
 
 

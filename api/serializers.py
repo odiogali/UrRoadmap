@@ -112,13 +112,89 @@ class SectionSerializer(serializers.ModelSerializer):
     
 
 class StudentSerializer(serializers.ModelSerializer):
-    majors = serializers.CharField(source='major.prog_name', read_only=True)
-    minors = serializers.CharField(source='minor.prog_name', read_only=True)
-    #degree_program_name = serializers.CharField(source='degree_program.name', read_only=True) #this isn't in backend
-    
+    type = serializers.SerializerMethodField()
+    credits_completed = serializers.SerializerMethodField()
+    major = serializers.SerializerMethodField()
+    specialization = serializers.SerializerMethodField()
+    minor = serializers.SerializerMethodField()
+    research_area = serializers.SerializerMethodField()
+    thesis_title = serializers.SerializerMethodField()
+    advisor = serializers.SerializerMethodField()
+
     class Meta:
         model = Student
-        fields = ['student_id', 'fname', 'lname', 'majors', 'minors']
+        fields = [
+            "student_id",
+            "fname",
+            "lname",
+            "type",
+            "credits_completed",
+            "major",
+            "specialization",
+            "minor",
+            "research_area",
+            "thesis_title",
+            "advisor",
+        ]
+
+    def get_type(self, obj):
+        try:
+            if obj.undergraduate:
+                return "Undergraduate"
+        except Undergraduate.DoesNotExist:
+            pass
+        try:
+            if obj.graduate:
+                return "Graduate"
+        except Graduate.DoesNotExist:
+            pass
+        return "Unspecified"
+
+    def get_credits_completed(self, obj):
+        try:
+            return obj.undergraduate.credits_completed
+        except Undergraduate.DoesNotExist:
+            return None
+
+    def get_major(self, obj):
+        try:
+            return obj.undergraduate.major.prog_name
+        except (Undergraduate.DoesNotExist, AttributeError):
+            return None
+
+    def get_specialization(self, obj):
+        try:
+            return obj.undergraduate.specialization.sname
+        except (Undergraduate.DoesNotExist, AttributeError):
+            return None
+
+    def get_minor(self, obj):
+        try:
+            return obj.undergraduate.minor.prog_name
+        except (Undergraduate.DoesNotExist, AttributeError):
+            return None
+
+    def get_research_area(self, obj):
+        try:
+            return obj.graduate.research_area
+        except Graduate.DoesNotExist:
+            return None
+
+    def get_thesis_title(self, obj):
+        try:
+            return obj.graduate.thesis_title
+        except Graduate.DoesNotExist:
+            return None
+
+    def get_advisor(self, obj):
+        try:
+            employee = obj.graduate.teaching.employee
+            return f"{employee.fname} {employee.lname}"
+        except (Graduate.DoesNotExist, AttributeError):
+            return None
+    
+
+
 
 class GraduateSerializer(serializers.ModelSerializer):
     student = StudentSerializer(read_only=True)  # Nested serializer
