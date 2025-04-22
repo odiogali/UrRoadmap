@@ -529,10 +529,10 @@ function CourseGraph() {
 
         // Fetch professor name if professor ID exists
         if (node.professor) {
-          fetch(`http://localhost:8000/api/professors/${node.professor}/`)
+          fetch(`http://localhost:8000/api/teaching-staff/${node.professor}/`)
             .then(res => res.json())
             .then(data => {
-              setProfessorName(`${data.fname} ${data.lname}`);
+              setProfessorName(`${data.employee.fname} ${data.employee.lname}`);
             })
             .catch(err => {
               console.error("Failed to fetch professor data:", err);

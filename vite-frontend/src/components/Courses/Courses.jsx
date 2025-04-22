@@ -31,7 +31,6 @@ function Courses() {
               profName = [...new Set(
                 secRes.data.map(section => section.instructor_name)
               )].join(', ');
-              console.log(profName)
             } catch (err) {
               console.warn(`Prof for ${course.course_code} not found`);
             }
