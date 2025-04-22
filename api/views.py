@@ -41,25 +41,23 @@ class SectionViewSet(viewsets.ModelViewSet):
         return Response({"error": "Course code is required"}, status=400)
 
 class CourseViewSet(viewsets.ModelViewSet):
-    queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    queryset = Course.objects.all()
 
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return CourseSerializer
-        return CourseSerializer
-    
     def get_queryset(self):
         queryset = Course.objects.all()
         department_id = self.request.query_params.get('department')
         if department_id:
-            queryset = queryset.filter(department_id=department_id)
-            
+            queryset = queryset.filter(dno=department_id)
+
         search = self.request.query_params.get("search", "").strip()
         if search:
             queryset = queryset.filter(
                 Q(course_code__icontains=search) |
-                Q(textbook_isbn__icontains=search)
+                Q(course_title__icontains=search) |
+                Q(textbook_isbn__isbn__icontains=search) |
+                Q(textbook_isbn__title__icontains=search) |
+                Q(dno__dname__icontains=search)  # or whatever the department name field is
             )
         return queryset
 

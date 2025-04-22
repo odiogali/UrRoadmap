@@ -13,8 +13,8 @@ function CourseView() {
       try {
         const url = search
           ? `http://localhost:8000/api/course/?search=${encodeURIComponent(
-              search
-            )}`
+            search
+          )}`
           : "http://localhost:8000/api/course/";
 
         const res = await axios.get(url);
@@ -91,11 +91,11 @@ function CourseView() {
         prev.map((c) =>
           c.code === editingCourse
             ? {
-                ...c,
-                title: editFormData.course_title,
-                textbook: editFormData.textbook_isbn,
-                department: editFormData.dno,
-              }
+              ...c,
+              title: editFormData.course_title,
+              textbook: editFormData.textbook_isbn,
+              department: editFormData.dno,
+            }
             : c
         )
       );
