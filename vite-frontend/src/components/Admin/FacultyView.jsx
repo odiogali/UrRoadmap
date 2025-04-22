@@ -10,18 +10,18 @@ function FacultyView() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:8000/api/professors/").then(res => res.json()),
-      fetch("http://localhost:8000/api/admin-staff/").then(res => res.json()),
-      fetch("http://localhost:8000/api/support-staff/").then(res => res.json())
+      fetch("http://localhost:8000/api/professors/").then((res) => res.json()),
+      fetch("http://localhost:8000/api/admin-staff/").then((res) => res.json()),
     ])
-      .then(([professors, adminStaff, supportStaff]) => {
-        // Add a type field to each faculty member for filtering
-        const professorData = professors.map(p => ({ ...p, type: "professor" }));
-        const adminData = adminStaff.map(a => ({ ...a, type: "admin" }));
-        const supportData = supportStaff.map(s => ({ ...s, type: "support" }));
+      .then(([professors, adminStaff]) => {
+        const professorData = professors.map((p) => ({
+          ...p,
+          type: "professor",
+        }));
+        const adminData = adminStaff.map((a) => ({ ...a, type: "admin" }));
 
         // Combine all faculty data
-        const allFaculty = [...professorData, ...adminData, ...supportData];
+        const allFaculty = [...professorData, ...adminData];
         setFaculty(allFaculty);
         setLoading(false);
       })
@@ -33,21 +33,19 @@ function FacultyView() {
   }, []);
 
   // Filter faculty based on search and active tab
-  const filtered = faculty.filter(
-    (f) => {
-      // First filter by name or ID
-      const matchesSearch =
-        `${f.fname} ${f.lname}`.toLowerCase().includes(search.toLowerCase()) ||
-        f.eid.toString().includes(search);
+  const filtered = faculty.filter((f) => {
+    // First filter by name or ID
+    const matchesSearch =
+      `${f.fname} ${f.lname}`.toLowerCase().includes(search.toLowerCase()) ||
+      f.eid.toString().includes(search);
 
-      // Then filter by type if not "all"
-      if (activeTab === "all") {
-        return matchesSearch;
-      } else {
-        return matchesSearch && f.type === activeTab;
-      }
+    // Then filter by type if not "all"
+    if (activeTab === "all") {
+      return matchesSearch;
+    } else {
+      return matchesSearch && f.type === activeTab;
     }
-  );
+  });
 
   if (loading) return <p>Loading faculty data...</p>;
   if (error) return <p>{error}</p>;
@@ -84,12 +82,6 @@ function FacultyView() {
           >
             Admin Staff
           </button>
-          <button
-            className={activeTab === "support" ? "active" : ""}
-            onClick={() => setActiveTab("support")}
-          >
-            Support Staff
-          </button>
         </div>
       </div>
 
@@ -101,7 +93,9 @@ function FacultyView() {
             <th>Last Name</th>
             <th>Department</th>
             <th>Role</th>
-            {activeTab === "professor" || activeTab === "all" ? <th>Research Area</th> : null}
+            {activeTab === "professor" || activeTab === "all" ? (
+              <th>Research Area</th>
+            ) : null}
             <th>Salary</th>
           </tr>
         </thead>
@@ -114,14 +108,21 @@ function FacultyView() {
                 <td>{f.lname || "—"}</td>
                 <td>{f.dno || "—"}</td>
                 <td>{f.type.charAt(0).toUpperCase() + f.type.slice(1)}</td>
-                {activeTab === "professor" || activeTab === "all" ?
-                  <td>{f.type === "professor" ? (f.research_area || "—") : "—"}</td> : null}
+                {activeTab === "professor" || activeTab === "all" ? (
+                  <td>
+                    {f.type === "professor" ? f.research_area || "—" : "—"}
+                  </td>
+                ) : null}
                 <td>${f.salary?.toLocaleString() || "—"}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={activeTab === "professor" || activeTab === "all" ? 7 : 6}>
+              <td
+                colSpan={
+                  activeTab === "professor" || activeTab === "all" ? 7 : 6
+                }
+              >
                 No faculty members match your search.
               </td>
             </tr>

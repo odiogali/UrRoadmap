@@ -77,7 +77,8 @@ class AntirequisiteSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source='dno.dname', read_only=True)
-    
+    course_title = serializers.CharField(read_only=True)
+    textbook_title = serializers.CharField(source='textbook_isbn.title', read_only=True) 
     class Meta:
         model = Course
         fields = '__all__'

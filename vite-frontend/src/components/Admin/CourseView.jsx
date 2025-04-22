@@ -21,8 +21,8 @@ function CourseView() {
         const transformed = res.data.map((course, index) => ({
           id: index,
           code: course.course_code,
-          textbook: course.textbook_isbn || "—",
-          professorId: course.prof || "—",
+          title: course.course_title || "—",
+          textbook: course.textbook_title || "—",
           department: course.department_name || "—",
         }));
 
@@ -54,8 +54,8 @@ function CourseView() {
         <thead>
           <tr>
             <th>Code</th>
-            <th>Textbook (ISBN)</th>
-            <th>Professor ID</th>
+            <th>Title</th>
+            <th>Textbook </th>
             <th>Department</th>
           </tr>
         </thead>
@@ -64,8 +64,8 @@ function CourseView() {
             courses.map((c) => (
               <tr key={c.id}>
                 <td>{c.code}</td>
+                <td>{c.title}</td>
                 <td>{c.textbook}</td>
-                <td>{c.professorId}</td>
                 <td>{c.department}</td>
               </tr>
             ))
