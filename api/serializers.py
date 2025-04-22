@@ -29,36 +29,46 @@ class AdminStaffSerializer(serializers.ModelSerializer):
         model = AdminStaff
         fields = '__all__'
 
-class ProfessorSerializer(serializers.ModelSerializer):
-    
+class SimpleTeachingStaffSerializer(serializers.ModelSerializer):
+    employee = EmployeeSerializer(read_only=True)
+
     class Meta:
-        model = Professor
-        fields = '__all__'
+        model = TeachingStaff
+        fields = ['employee']
 
 class TeachingStaffSerializer(serializers.ModelSerializer):
-    employee = EmployeeSerializer(read_only=True)  # Include full employee details
+    employee = EmployeeSerializer(read_only=True)
     professor_details = serializers.SerializerMethodField()
     graduate_students = serializers.SerializerMethodField()
     
     class Meta:
         model = TeachingStaff
         fields = ['employee', 'professor_details', 'graduate_students']
-    
+
     def get_professor_details(self, obj):
-        # Check if this teaching staff is a professor
         try:
             professor = Professor.objects.get(teaching=obj)
-            return ProfessorSerializer(professor).data
+            return SimpleProfessorSerializer(professor).data  # 👈 use simple version
         except Professor.DoesNotExist:
             return None
-    
+
     def get_graduate_students(self, obj):
-        # Get all graduate students supervised by this teaching staff
         graduates = Graduate.objects.filter(teaching=obj)
-        if graduates.exists():
-            return GraduateSerializer(graduates, many=True).data
-        return []
+        return GraduateSerializer(graduates, many=True).data if graduates.exists() else []
     
+class SimpleProfessorSerializer(serializers.ModelSerializer):
+    employee = EmployeeSerializer(source='teaching.employee')
+
+    class Meta:
+        model = Professor
+        fields = ['employee', 'research_area']
+
+class ProfessorSerializer(serializers.ModelSerializer):
+    teaching = SimpleTeachingStaffSerializer(read_only=True)
+
+    class Meta:
+        model = Professor
+        fields = '__all__'
 
 class TextbookSerializer(serializers.ModelSerializer):
     class Meta:

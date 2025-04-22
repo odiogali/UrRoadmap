@@ -102,27 +102,29 @@ def course_graph(request):
         # Get courses based on department filter
         if department != 'all':
             cursor.execute("""
-                SELECT c.Course_code, c.Textbook_ISBN, d.Dname, c.Prof_id
+                SELECT c.Course_code, c.Textbook_ISBN, d.Dname, s.Instructor_id
                 FROM course c
                 JOIN department d ON c.Dno = d.Dno
+                LEFT JOIN section s ON c.Course_code = s.SCourse_code
                 WHERE c.Dno = %s
             """, [department])
         else:
             cursor.execute("""
-                SELECT c.Course_code, c.Textbook_ISBN, d.Dname, c.Prof_id
+                SELECT c.Course_code, c.Textbook_ISBN, d.Dname, s.Instructor_id
                 FROM course c
                 LEFT JOIN department d ON c.Dno = d.Dno
+                LEFT JOIN section s ON c.Course_code = s.SCourse_code
             """)
         
         # Build node details dictionary
         node_details = {}
-        for code, isbn, dept_name, prof_id in cursor.fetchall():
+        for code, isbn, dept_name, instructor_id in cursor.fetchall():
             nodes.add(code)
             node_details[code] = {
                 "id": code,
                 "textbook": isbn,
                 "department": dept_name,
-                "professor": prof_id,
+                "professor": instructor_id,
                 "antirequisites": []
             }
         
