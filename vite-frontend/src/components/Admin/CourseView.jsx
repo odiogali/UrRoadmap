@@ -36,7 +36,25 @@ function CourseView() {
     };
 
     fetchCourses();
-  }, [search]); // 🔁 Trigger refetch when search term changes
+  }, [search]);
+
+  const handleDelete = async (courseCode) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete course "${courseCode}"?`
+    );
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(`http://localhost:8000/api/course/${courseCode}/`);
+      setCourses((prevCourses) =>
+        prevCourses.filter((c) => c.code !== courseCode)
+      );
+      alert("Course deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting course:", error);
+      alert("Failed to delete course.");
+    }
+  };
 
   return (
     <div className="course-page">
@@ -55,10 +73,12 @@ function CourseView() {
           <tr>
             <th>Code</th>
             <th>Title</th>
-            <th>Textbook </th>
+            <th>Textbook</th>
             <th>Department</th>
+            <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {courses.length > 0 ? (
             courses.map((c) => (
@@ -67,11 +87,19 @@ function CourseView() {
                 <td>{c.title}</td>
                 <td>{c.textbook}</td>
                 <td>{c.department}</td>
+                <td>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(c.code)}
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="4">No courses match your search.</td>
+              <td colSpan="5">No courses match your search.</td>
             </tr>
           )}
         </tbody>
