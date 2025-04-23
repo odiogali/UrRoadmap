@@ -240,7 +240,6 @@ class StudentViewSet(viewsets.ModelViewSet):
             
         return queryset
 
-
 class CourseProgressionView(generics.ListAPIView):
     """Special view for getting course progression data for visualization"""
     #serializer_class = CourseProgressionSerializer
