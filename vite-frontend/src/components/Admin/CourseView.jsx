@@ -5,40 +5,63 @@ import "./CourseView.css";
 function CourseView() {
   const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState("");
+  const [textbooks, setTextbooks] = useState([]);
+  const [departments, setDepartments] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const url = search
-          ? `http://localhost:8000/api/course/?search=${encodeURIComponent(
+  const fetchCourses = async () => {
+    try {
+      const url = search
+        ? `http://localhost:8000/api/course/?search=${encodeURIComponent(
             search
           )}`
-          : "http://localhost:8000/api/course/";
+        : "http://localhost:8000/api/course/";
 
-        const res = await axios.get(url);
-        const transformed = res.data.map((course, index) => ({
-          id: index,
-          code: course.course_code,
-          title: course.course_title || "—",
-          textbook: course.textbook_title || "—",
-          textbook_isbn: course.textbook_isbn || "",
-          department: course.department_name || "—",
-          dno: course.dno || "",
-        }));
+      const res = await axios.get(url);
+      const transformed = res.data.map((course, index) => ({
+        id: index,
+        code: course.course_code,
+        title: course.course_title || "—",
+        textbook: course.textbook_title || "—",
+        textbook_isbn: course.textbook_isbn || "",
+        department: course.department_name || "—",
+        dno: course.dno || "",
+      }));
 
-        setCourses(transformed);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-        setError("Failed to load courses.");
-        setLoading(false);
-      }
-    };
+      setCourses(transformed);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      setError("Failed to load courses.");
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchCourses();
+    fetchTextbooks();
+    fetchDepartments();
   }, [search]);
+
+  const fetchTextbooks = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/textbook/");
+      setTextbooks(res.data);
+    } catch (err) {
+      console.error("Failed to load textbooks:", err);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/department/");
+      setDepartments(res.data);
+    } catch (err) {
+      console.error("Failed to load departments:", err);
+    }
+  };
 
   //deleting course functionality
   const handleDelete = async (courseCode) => {
@@ -81,29 +104,24 @@ function CourseView() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log("EDIT PAYLOAD", {
+        course_title: editFormData.course_title,
+        textbook_isbn: editFormData.textbook_isbn,
+        dno: parseInt(editFormData.dno),
+      });
+
       await axios.put(`http://localhost:8000/api/course/${editingCourse}/`, {
+        course_code: editingCourse,
         course_title: editFormData.course_title,
         textbook_isbn: editFormData.textbook_isbn || null,
         dno: parseInt(editFormData.dno),
       });
 
-      setCourses((prev) =>
-        prev.map((c) =>
-          c.code === editingCourse
-            ? {
-              ...c,
-              title: editFormData.course_title,
-              textbook: editFormData.textbook_isbn,
-              department: editFormData.dno,
-            }
-            : c
-        )
-      );
-
+      await fetchCourses();
       setEditingCourse(null);
       alert("Course updated successfully!");
     } catch (err) {
-      console.error("Error updating course:", err);
+      console.error("Error response:", err.response?.data || err.message); //error functionality
       alert("Failed to update course. Make sure Dno and ISBN are valid.");
     }
   };
@@ -180,9 +198,8 @@ function CourseView() {
                 required
               />
 
-              <label>Textbook ISBN</label>
-              <input
-                type="text"
+              <label>Textbook</label>
+              <select
                 value={editFormData.textbook_isbn}
                 onChange={(e) =>
                   setEditFormData({
@@ -190,17 +207,29 @@ function CourseView() {
                     textbook_isbn: e.target.value,
                   })
                 }
-              />
+              >
+                <option value="">-- Select Textbook --</option>
+                {textbooks.map((tb) => (
+                  <option key={tb.isbn} value={tb.isbn}>
+                    {tb.title}
+                  </option>
+                ))}
+              </select>
 
-              <label>Department Number (Dno)</label>
-              <input
-                type="number"
+              <label>Department</label>
+              <select
                 value={editFormData.dno}
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, dno: e.target.value })
                 }
-                required
-              />
+              >
+                <option value="">-- Select Department --</option>
+                {departments.map((dept) => (
+                  <option key={dept.dno} value={dept.dno}>
+                    {dept.dname}
+                  </option>
+                ))}
+              </select>
 
               <div className="modal-actions">
                 <button type="submit" className="save-btn">

@@ -5,14 +5,40 @@ import "./Login.css";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (username === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/student");
+    setError(""); 
+
+    try {
+      const response = await fetch("http://localhost:8000/api/token/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        setError("Invalid credentials");
+        return;
+      }
+
+      const data = await response.json();
+      localStorage.setItem("access", data.access);
+      localStorage.setItem("refresh", data.refresh);
+
+      
+      if (username === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/student");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An error occurred. Please try again.");
     }
   };
 
@@ -26,6 +52,7 @@ function Login() {
 
         <form className="login-form" onSubmit={handleLogin}>
           <h2>Log In</h2>
+          {error && <p style={{ color: "red" }}>{error}</p>}
           <input
             type="text"
             placeholder="Username"
