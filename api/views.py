@@ -1,25 +1,38 @@
-from django.shortcuts import render
 from django.db.models import Q
 from django.db import models
-from rest_framework import viewsets, generics, status, permissions
+from rest_framework import viewsets, generics, status, mixins
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
                     Professor, Employee, Section,
-                    AdminStaff, TeachingStaff, HasAsPreq, HasAsAntireq)
+                    AdminStaff, TeachingStaff, Specialization, HasAsPreq, HasAsAntireq)
 from .serializers import (DepartmentSerializer, DegreeProgramSerializer, 
                          CourseSerializer, SectionSerializer,
                          TextbookSerializer, SectionSerializer, 
                          StudentSerializer, GraduateSerializer, 
                          UndergraduateSerializer, 
-                         AdminStaffSerializer, 
+                         AdminStaffSerializer, SpecializationSerializer,
                          ProfessorSerializer, TeachingStaffSerializer, EmployeeSerializer)
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+
+class SpecializationList(generics.ListCreateAPIView):
+    queryset = Specialization.objects.all()
+    serializer_class = SpecializationSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        sname = self.request.query_params.get('sname')
+        program = self.request.query_params.get('program')
+        if sname is not None:
+            queryset = queryset.filter(sname=sname)
+        if program is not None:
+            queryset = queryset.filter(program__prog_name=program)
+        return queryset
 
 class DegreeProgramViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DegreeProgram.objects.all()

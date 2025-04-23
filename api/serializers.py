@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import (Department, DegreeProgram,
+from .models import (Department, DegreeProgram, Specialization,
                    AdminStaff, Professor, Student, Graduate, 
                    TeachingStaff, Textbook, Course, Section,
                    Section, Undergraduate, Employee, HasAsPreq, HasAsAntireq)
@@ -254,8 +254,35 @@ class GraduateSerializer(serializers.ModelSerializer):
         return obj.student.lname
 
 class UndergraduateSerializer(serializers.ModelSerializer):
-    student = StudentSerializer(read_only=True)  # Nested serializer
+    student = StudentSerializer(read_only=True)  # For reading the nested data
+    student_id = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(),
+        source='student',
+        write_only=True  # Only used when writing
+    )
     
     class Meta:
         model = Undergraduate
-        fields = ['student', 'credits_completed', 'major', 'specialization', 'minor']
+        fields = ['student', 'student_id', 'credits_completed', 'major', 'specialization', 'minor']
+
+class SpecializationSerializer(serializers.ModelSerializer):
+    program = serializers.SlugRelatedField(
+        read_only=False,
+        queryset=DegreeProgram.objects.all(),
+        slug_field='prog_name'
+    )
+
+    class Meta:
+        model = Specialization
+        fields = ['id', 'sname', 'program']
+
+    def to_internal_value(self, data):
+        program_name = data.get('program')
+        try:
+            program = DegreeProgram.objects.get(prog_name=program_name)
+        except DegreeProgram.DoesNotExist:
+            raise serializers.ValidationError({
+                'program': 'Degree program with this name does not exist.'
+            })
+        data['program'] = program.prog_name
+        return super().to_internal_value(data)
