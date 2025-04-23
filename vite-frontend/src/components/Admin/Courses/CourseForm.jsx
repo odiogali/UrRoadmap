@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FormField from "../Dashboard/components/FormField";
 
 export default function CourseForm() {
@@ -13,6 +13,47 @@ export default function CourseForm() {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for dropdown options
+  const [textbooks, setTextbooks] = useState([]);
+  const [professors, setProfessors] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch all dropdown data on component mount
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch textbooks
+        const textbooksResponse = await fetch("/api/textbook/");
+        const textbooksData = await textbooksResponse.json();
+        setTextbooks(textbooksData);
+
+        // Fetch professors
+        const professorsResponse = await fetch("/api/professors/");
+        const professorsData = await professorsResponse.json();
+        setProfessors(professorsData);
+
+        // Fetch departments
+        const departmentsResponse = await fetch("/api/department/");
+        const departmentsData = await departmentsResponse.json();
+        setDepartments(departmentsData);
+
+        // Fetch all courses for prerequisites and antirequisites
+        const coursesResponse = await fetch("/api/course/");
+        const coursesData = await coursesResponse.json();
+        setAllCourses(coursesData);
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDropdownData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,13 +70,25 @@ export default function CourseForm() {
     }
   };
 
-  const validateTextbookISBN = (isbn) => {
-    // Allow empty values since textbook is optional
-    if (!isbn || isbn.trim() === "") {
-      return true;
-    }
-    // Add any additional ISBN validation logic here if needed
-    return true;
+  // Toggle a course in or out of prerequisites/antirequisites
+  const toggleCourseSelection = (courseCode, fieldName) => {
+    setFormData(prevData => {
+      const currentSelection = [...prevData[fieldName]];
+
+      if (currentSelection.includes(courseCode)) {
+        // Remove the course if already selected
+        return {
+          ...prevData,
+          [fieldName]: currentSelection.filter(code => code !== courseCode)
+        };
+      } else {
+        // Add the course if not selected
+        return {
+          ...prevData,
+          [fieldName]: [...currentSelection, courseCode]
+        };
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -79,7 +132,7 @@ export default function CourseForm() {
 
       // Add prerequisites
       for (const prereq of formData.prerequisites) {
-        await fetch("/api/has_as_preq/", {
+        await fetch("/api/prerequisites/create/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -91,7 +144,7 @@ export default function CourseForm() {
 
       // Add antirequisites
       for (const antireq of formData.antirequisites) {
-        await fetch("/api/has_as_antireq/", {
+        await fetch("/api/antirequisites/create/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -118,6 +171,57 @@ export default function CourseForm() {
     }
   };
 
+  // Prepare dropdown option arrays in the format used by FormField
+  const textbookOptions = isLoading
+    ? [{ value: "", label: "Loading textbooks..." }]
+    : [
+      { value: "", label: "Select a textbook (optional)" },
+      ...textbooks.map(book => ({
+        value: book.isbn,
+        label: `${book.title} (ISBN: ${book.isbn})`
+      }))
+    ];
+
+  const professorOptions = isLoading
+    ? [{ value: "", label: "Loading professors..." }]
+    : [
+      { value: "", label: "Select a professor" },
+      ...professors.map(p => ({
+        value: p.teaching?.employee?.eid,
+        label: `${p.teaching?.employee?.fname} ${p.teaching?.employee?.lname} (ID: ${p.teaching?.employee?.eid})`
+      }))
+    ];
+
+  const departmentOptions = isLoading
+    ? [{ value: "", label: "Loading departments..." }]
+    : [
+      { value: "", label: "Select a department" },
+      ...departments.map(dept => ({
+        value: dept.dno,
+        label: `${dept.dname} (Dept #: ${dept.dno})`
+      }))
+    ];
+
+  // Filter courses for prerequisites (excluding antirequisites)
+  const prerequisiteOptions = isLoading
+    ? []
+    : allCourses
+      .filter(course => !formData.antirequisites.includes(course.course_code))
+      .map(course => ({
+        value: course.course_code,
+        label: `${course.course_code}: ${course.course_title}`
+      }));
+
+  // Filter courses for antirequisites (excluding prerequisites)
+  const antirequisiteOptions = isLoading
+    ? []
+    : allCourses
+      .filter(course => !formData.prerequisites.includes(course.course_code))
+      .map(course => ({
+        value: course.course_code,
+        label: `${course.course_code}: ${course.course_title}`
+      }));
+
   return (
     <div>
       <h2 className="tab-section-title">Course Registration</h2>
@@ -137,27 +241,50 @@ export default function CourseForm() {
 
           <div>
             <FormField
-              label="Textbook ISBN (optional)"
+              label="Textbook"
               name="textbook_isbn"
-              type="text"
+              type="select"
               value={formData.textbook_isbn}
               onChange={handleChange}
+              options={textbookOptions}
               error={errors.textbook_isbn}
+              disabled={isLoading}
             />
           </div>
 
           <div>
             <FormField
+<<<<<<< HEAD
               label="Department Number"
+=======
+              label="Professor"
+              name="prof"
+              type="select"
+              value={formData.prof}
+              onChange={handleChange}
+              options={professorOptions}
+              required
+              error={errors.prof}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <FormField
+              label="Department"
+>>>>>>> d952bd40 (Adding a new course now works.)
               name="dno"
-              type="number"
+              type="select"
               value={formData.dno}
               onChange={handleChange}
+              options={departmentOptions}
               required
               error={errors.dno}
+              disabled={isLoading}
             />
           </div>
         </div>
+
         <FormField
           label="Course Title"
           name="course_title"
@@ -167,37 +294,95 @@ export default function CourseForm() {
           required
         />
 
-        <FormField
-          label="Prerequisites (comma-separated course codes)"
-          name="prerequisites"
-          type="text"
-          value={formData.prerequisites.join(",")}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              prerequisites: e.target.value.split(",").map((c) => c.trim()),
-            }))
-          }
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Prerequisites Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Prerequisites
+            </label>
+            <div className="bg-gray-800 rounded-md h-64 overflow-hidden">
+              <div className="h-full overflow-y-auto p-3">
+                {isLoading ? (
+                  <p className="text-gray-300">Loading courses...</p>
+                ) : prerequisiteOptions.length > 0 ? (
+                  <div className="space-y-2">
+                    {prerequisiteOptions.map(option => (
+                      <div key={option.value} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`prereq-${option.value}`}
+                          checked={formData.prerequisites.includes(option.value)}
+                          onChange={() => toggleCourseSelection(option.value, "prerequisites")}
+                          className="h-4 w-4 text-blue-500 focus:ring-blue-400 bg-gray-700 border-gray-600"
+                        />
+                        <label
+                          htmlFor={`prereq-${option.value}`}
+                          className="ml-2 text-sm text-gray-200 cursor-pointer hover:text-white"
+                        >
+                          {option.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-300">No available courses for prerequisites</p>
+                )}
+              </div>
+            </div>
+            {formData.prerequisites.length > 0 && (
+              <p className="text-sm text-gray-600 mt-1">
+                Selected: {formData.prerequisites.length} course(s)
+              </p>
+            )}
+          </div>
 
-        <FormField
-          label="Antirequisites (comma-separated course codes)"
-          name="antirequisites"
-          type="text"
-          value={formData.antirequisites.join(",")}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              antirequisites: e.target.value.split(",").map((c) => c.trim()),
-            }))
-          }
-        />
+          {/* Antirequisites Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Antirequisites
+            </label>
+            <div className="bg-gray-800 rounded-md h-64 overflow-hidden">
+              <div className="h-full overflow-y-auto p-3">
+                {isLoading ? (
+                  <p className="text-gray-300">Loading courses...</p>
+                ) : antirequisiteOptions.length > 0 ? (
+                  <div className="space-y-2">
+                    {antirequisiteOptions.map(option => (
+                      <div key={option.value} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`antireq-${option.value}`}
+                          checked={formData.antirequisites.includes(option.value)}
+                          onChange={() => toggleCourseSelection(option.value, "antirequisites")}
+                          className="h-4 w-4 text-blue-500 focus:ring-blue-400 bg-gray-700 border-gray-600"
+                        />
+                        <label
+                          htmlFor={`antireq-${option.value}`}
+                          className="ml-2 text-sm text-gray-200 cursor-pointer hover:text-white"
+                        >
+                          {option.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-300">No available courses for antirequisites</p>
+                )}
+              </div>
+            </div>
+            {formData.antirequisites.length > 0 && (
+              <p className="text-sm text-gray-600 mt-1">
+                Selected: {formData.antirequisites.length} course(s)
+              </p>
+            )}
+          </div>
+        </div>
 
         <div className="pt-4">
           <button
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLoading}
           >
             {isSubmitting ? "Adding Course..." : "Add Course"}
           </button>

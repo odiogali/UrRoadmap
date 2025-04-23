@@ -92,6 +92,38 @@ def get_prereqs(request, course_code):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+def create_prereq(request):
+    course_code = request.data.get('course_code')
+    prereq_code = request.data.get('prereq_code')
+    
+    if not course_code or not prereq_code:
+        return Response({"error": "Both course_code and prereq_code are required"}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Check if both courses exist
+        course_exists = Course.objects.filter(course_code=course_code).exists()
+        prereq_exists = Course.objects.filter(course_code=prereq_code).exists()
+        
+        if not course_exists or not prereq_exists:
+            return Response({"error": "One or both courses do not exist"}, 
+                          status=status.HTTP_404_NOT_FOUND)
+        
+        # Use raw SQL to insert the relationship
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO has_as_preq (Course_code, Prereq_code)
+                VALUES (%s, %s)
+            """, [course_code, prereq_code])
+        
+        return Response({"success": f"Added {prereq_code} as prerequisite for {course_code}"}, 
+                       status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({"error": str(e)}, 
+                       status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET'])
 def get_antireqs(request, course_code):
     try:
@@ -115,6 +147,34 @@ def get_antireqs(request, course_code):
         return Response(result)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def create_antireq(request):
+    course_code = request.data.get('course_code')
+    antireq_code = request.data.get('antireq_code')
+    
+    if not course_code or not antireq_code:
+        return Response({"error": "Both course_code and antireq_code are required"}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        course = Course.objects.get(course_code=course_code)
+        antireq = Course.objects.get(course_code=antireq_code)
+        
+        # Create the antirequisite relationship
+        HasAsAntireq.objects.create(
+            course_code=course,
+            antireq_code=antireq
+        )
+        
+        return Response({"success": f"Added {antireq_code} as antirequisite for {course_code}"}, 
+                       status=status.HTTP_201_CREATED)
+    except Course.DoesNotExist:
+        return Response({"error": "One or both courses do not exist"}, 
+                       status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, 
+                       status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def course_graph(request):
