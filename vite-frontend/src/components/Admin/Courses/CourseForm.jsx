@@ -7,7 +7,7 @@ export default function CourseForm() {
     course_title: "",
     textbook_isbn: "",
     dno: "",
-    prof: "",
+    //prof: "",
     prerequisites: [],
     antirequisites: [],
   });
@@ -45,6 +45,7 @@ export default function CourseForm() {
 
     try {
       // Create the course
+      console.log("Submitting course with data:", formData);
       const courseResponse = await fetch("/api/course/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +54,6 @@ export default function CourseForm() {
           course_title: formData.course_title,
           textbook_isbn: formData.textbook_isbn || null,
           dno: formData.dno,
-          prof: formData.prof,
         }),
       });
 
@@ -89,7 +89,6 @@ export default function CourseForm() {
         course_title: "",
         textbook_isbn: "",
         dno: "",
-        prof: "",
         prerequisites: [],
         antirequisites: [],
       });
@@ -126,18 +125,6 @@ export default function CourseForm() {
               value={formData.textbook_isbn}
               onChange={handleChange}
               error={errors.textbook_isbn}
-            />
-          </div>
-
-          <div>
-            <FormField
-              label="Professor ID"
-              name="prof"
-              type="number"
-              value={formData.prof}
-              onChange={handleChange}
-              required
-              error={errors.prof}
             />
           </div>
 
