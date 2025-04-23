@@ -4,6 +4,8 @@ from rest_framework import viewsets, generics, status, mixins
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
                     Professor, Employee, Section,
@@ -351,3 +353,9 @@ class TeachingStaffDetailView(generics.RetrieveAPIView):
     queryset = TeachingStaff.objects.all()
     serializer_class = TeachingStaffSerializer
     lookup_field = 'employee_id'
+
+class SecureExampleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"message": "You are authenticated!"})

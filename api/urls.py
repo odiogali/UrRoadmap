@@ -1,6 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import ( # type: ignore
+    TokenObtainPairView,
+    TokenRefreshView,)
 from . import views
+from .views import SecureExampleView
 
 router = DefaultRouter()
 router.register(r'department', views.DepartmentViewSet)
@@ -24,4 +28,7 @@ urlpatterns = [
     path('antirequisites/<str:course_code>/', views.get_antireqs, name='get_antireqs'),
     path('graph/', views.course_graph),
     path('specialization/', views.SpecializationList.as_view()),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('secure/', SecureExampleView.as_view(), name='secure'),
 ]
