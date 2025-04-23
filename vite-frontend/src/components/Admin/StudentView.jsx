@@ -49,7 +49,6 @@ function StudentView() {
           <th>Last Name</th>
           <th>Research Area</th>
           <th>Thesis Title</th>
-          <th>Advisor</th>
         </tr>
       );
     }
@@ -92,7 +91,6 @@ function StudentView() {
           {baseCols}
           <td>{student.research_area ?? "—"}</td>
           <td>{student.thesis_title ?? "—"}</td>
-          <td>{student.advisor ?? "—"}</td>
         </tr>
       );
     }

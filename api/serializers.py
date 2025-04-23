@@ -15,12 +15,49 @@ class DegreeProgramSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EmployeeSerializer(serializers.ModelSerializer):
-    # Include department details instead of just the ID
-    dno = DepartmentSerializer(read_only=True)
-    
+    is_professor = serializers.SerializerMethodField()
+    is_admin = serializers.SerializerMethodField()
+    is_teaching = serializers.SerializerMethodField()
+    research_area = serializers.SerializerMethodField()
+    department_name = serializers.CharField(source="dno.dname", read_only=True)
+
     class Meta:
         model = Employee
-        fields = ['eid', 'fname', 'lname', 'salary', 'dno']
+        fields = [
+            'eid', 'fname', 'lname', 'salary', 'dno',
+            'department_name', 'is_professor', 'is_admin',
+            'is_teaching', 'research_area'
+        ]
+
+    def get_is_professor(self, obj):
+        return hasattr(obj, 'teachingstaff') and hasattr(obj.teachingstaff, 'professor')
+
+    def get_is_teaching(self, obj):
+        return hasattr(obj, 'teachingstaff')
+
+    def get_is_admin(self, obj):
+        return hasattr(obj, 'adminstaff')
+
+    def get_research_area(self, obj):
+        if hasattr(obj, 'teachingstaff'):
+            # If employee is a professor, get research area from professor model
+            if hasattr(obj.teachingstaff, 'professor'):
+                return obj.teachingstaff.professor.research_area
+            
+            # If employee is a teaching staff but not a professor,
+            # check if they're a graduate student teaching staff
+            if hasattr(obj.teachingstaff, 'graduate'):
+                return obj.teachingstaff.graduate.research_area
+            
+            # Try to find a graduate student with matching name
+            graduate = Graduate.objects.filter(
+                student__fname=obj.fname,
+                student__lname=obj.lname
+            ).first()
+            if graduate:
+                return graduate.research_area
+        
+        return None
 
 class AdminStaffSerializer(serializers.ModelSerializer):
     employee = EmployeeSerializer(read_only=True)  # Nested serializer
@@ -198,15 +235,23 @@ class StudentSerializer(serializers.ModelSerializer):
         except (Graduate.DoesNotExist, AttributeError):
             return None
     
-
-
-
 class GraduateSerializer(serializers.ModelSerializer):
-    student = StudentSerializer(read_only=True)  # Nested serializer
-    
+    student_id = serializers.SerializerMethodField()
+    fname = serializers.SerializerMethodField()
+    lname = serializers.SerializerMethodField()
+
     class Meta:
         model = Graduate
-        fields = ['student', 'thesis_title', 'research_area', 'teaching']
+        fields = ['student_id', 'fname', 'lname', 'research_area', 'thesis_title', 'teaching']
+
+    def get_student_id(self, obj):
+        return obj.student.student_id
+
+    def get_fname(self, obj):
+        return obj.student.fname
+
+    def get_lname(self, obj):
+        return obj.student.lname
 
 class UndergraduateSerializer(serializers.ModelSerializer):
     student = StudentSerializer(read_only=True)  # Nested serializer

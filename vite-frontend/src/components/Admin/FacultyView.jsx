@@ -9,24 +9,26 @@ function FacultyView() {
   const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
-    Promise.all([
-      fetch("http://localhost:8000/api/professors/").then((res) => res.json()),
-      fetch("http://localhost:8000/api/admin-staff/").then((res) => res.json()),
-    ])
-      .then(([professors, adminStaff]) => {
-        const professorData = professors.map((p) => ({
-          ...p,
-          type: "professor",
-        }));
-        const adminData = adminStaff.map((a) => ({ ...a, type: "admin" }));
+    fetch("http://localhost:8000/api/employees/")
+      .then((res) => res.json())
+      .then((data) => {
+        const parsed = data.map((emp) => {
+          let role = "Employee";
+          if (emp.is_professor) role = "Professor";
+          else if (emp.is_admin) role = "Admin Staff";
+          else if (emp.is_teaching) role = "Teaching Staff";
 
-        // Combine all faculty data
-        const allFaculty = [...professorData, ...adminData];
-        setFaculty(allFaculty);
+          return {
+            ...emp,
+            type: role,
+          };
+        });
+
+        setFaculty(parsed);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error fetching faculty data:", err);
+        console.error("Error fetching employees:", err);
         setError("Failed to load faculty information.");
         setLoading(false);
       });
@@ -43,7 +45,7 @@ function FacultyView() {
     if (activeTab === "all") {
       return matchesSearch;
     } else {
-      return matchesSearch && f.type === activeTab;
+      return matchesSearch && f.type.toLowerCase() === activeTab.toLowerCase();
     }
   });
 
@@ -71,16 +73,22 @@ function FacultyView() {
             All Faculty
           </button>
           <button
-            className={activeTab === "professor" ? "active" : ""}
-            onClick={() => setActiveTab("professor")}
+            className={activeTab === "Professor" ? "active" : ""}
+            onClick={() => setActiveTab("Professor")}
           >
             Professors
           </button>
           <button
-            className={activeTab === "admin" ? "active" : ""}
-            onClick={() => setActiveTab("admin")}
+            className={activeTab === "Admin Staff" ? "active" : ""}
+            onClick={() => setActiveTab("Admin Staff")}
           >
             Admin Staff
+          </button>
+          <button
+            className={activeTab === "Teaching Staff" ? "active" : ""}
+            onClick={() => setActiveTab("Teaching Staff")}
+          >
+            Teaching Staff
           </button>
         </div>
       </div>
@@ -93,9 +101,9 @@ function FacultyView() {
             <th>Last Name</th>
             <th>Department</th>
             <th>Role</th>
-            {activeTab === "professor" || activeTab === "all" ? (
+            {(activeTab === "Professor" || activeTab === "Teaching Staff" || activeTab === "all") && (
               <th>Research Area</th>
-            ) : null}
+            )}
             <th>Salary</th>
           </tr>
         </thead>
@@ -107,12 +115,12 @@ function FacultyView() {
                 <td>{f.fname || "—"}</td>
                 <td>{f.lname || "—"}</td>
                 <td>{f.dno || "—"}</td>
-                <td>{f.type.charAt(0).toUpperCase() + f.type.slice(1)}</td>
-                {activeTab === "professor" || activeTab === "all" ? (
+                <td>{f.type}</td>
+                {(activeTab === "Professor" || activeTab === "Teaching Staff" || activeTab === "all") && (
                   <td>
-                    {f.type === "professor" ? f.research_area || "—" : "—"}
+                    {(f.type === "Professor" || f.type === "Teaching Staff") ? f.research_area || "—" : "—"}
                   </td>
-                ) : null}
+                )}
                 <td>${f.salary?.toLocaleString() || "—"}</td>
               </tr>
             ))
@@ -120,7 +128,7 @@ function FacultyView() {
             <tr>
               <td
                 colSpan={
-                  activeTab === "professor" || activeTab === "all" ? 7 : 6
+                  (activeTab === "Professor" || activeTab === "Teaching Staff" || activeTab === "all") ? 7 : 6
                 }
               >
                 No faculty members match your search.

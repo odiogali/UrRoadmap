@@ -305,10 +305,14 @@ class ProfessorListView(generics.ListCreateAPIView):
     lookup_field = 'eid'
     
     def get_queryset(self):
-        queryset = Professor.objects.all()
+        queryset = Professor.objects.select_related(
+            'teaching__employee__dno'  # following the relation chain
+        ).all()
+
         department = self.request.query_params.get('department')
         if department:
-            queryset = queryset.filter(department__name=department)
+            queryset = queryset.filter(teaching__employee__dno__dname__icontains=department)
+
         return queryset
 
 class ProfessorViewSet(viewsets.ModelViewSet):
