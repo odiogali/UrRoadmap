@@ -7,7 +7,7 @@ export default function CourseForm() {
     course_title: "",
     textbook_isbn: "",
     dno: "",
-    //prof: "",
+    prof: "",
     prerequisites: [],
     antirequisites: [],
   });
@@ -97,26 +97,7 @@ export default function CourseForm() {
     setErrors({});
 
     try {
-      //check to see if course exists
-      const checkResponse = await fetch(
-        `/api/course/?search=${formData.course_code}`
-      );
-      const checkData = await checkResponse.json();
-
-      const alreadyExists = checkData.some(
-        (course) =>
-          course.course_code.toUpperCase() ===
-          formData.course_code.toUpperCase()
-      );
-
-      if (alreadyExists) {
-        alert(`Course with code "${formData.course_code}" already exists.`);
-        setIsSubmitting(false);
-        return;
-      }
-
-      //create the course
-      console.log("Submitting course with data:", formData);
+      // Create the course
       const courseResponse = await fetch("/api/course/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,6 +106,7 @@ export default function CourseForm() {
           course_title: formData.course_title,
           textbook_isbn: formData.textbook_isbn || null,
           dno: formData.dno,
+          prof: formData.prof,
         }),
       });
 
@@ -160,6 +142,7 @@ export default function CourseForm() {
         course_title: "",
         textbook_isbn: "",
         dno: "",
+        prof: "",
         prerequisites: [],
         antirequisites: [],
       });
@@ -254,9 +237,6 @@ export default function CourseForm() {
 
           <div>
             <FormField
-<<<<<<< HEAD
-              label="Department Number"
-=======
               label="Professor"
               name="prof"
               type="select"
@@ -272,7 +252,6 @@ export default function CourseForm() {
           <div>
             <FormField
               label="Department"
->>>>>>> d952bd40 (Adding a new course now works.)
               name="dno"
               type="select"
               value={formData.dno}
