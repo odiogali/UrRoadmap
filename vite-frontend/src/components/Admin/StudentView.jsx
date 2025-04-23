@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import "./StudentView.css";
-import AddStudentModal from "./AddStudentModal";
 
 function StudentView() {
   const [students, setStudents] = useState([]);
@@ -118,10 +117,6 @@ function StudentView() {
       <h2 className="student-title">Student Directory</h2>
 
       <div className="controls-container">
-        <button onClick={() => setIsModalOpen(true)} className="add-btn">
-          ➕ Add Student
-        </button>
-
         <div className="filter-container">
           <label className="filter-label">Filter by type:</label>
           <select
@@ -165,11 +160,6 @@ function StudentView() {
         </table>
       )}
 
-      <AddStudentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onStudentAdded={() => window.location.reload()}
-      />
     </div>
   );
 }
