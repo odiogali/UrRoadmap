@@ -44,7 +44,25 @@ export default function CourseForm() {
     setErrors({});
 
     try {
-      // Create the course
+      //check to see if course exists
+      const checkResponse = await fetch(
+        `/api/course/?search=${formData.course_code}`
+      );
+      const checkData = await checkResponse.json();
+
+      const alreadyExists = checkData.some(
+        (course) =>
+          course.course_code.toUpperCase() ===
+          formData.course_code.toUpperCase()
+      );
+
+      if (alreadyExists) {
+        alert(`Course with code "${formData.course_code}" already exists.`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      //create the course
       console.log("Submitting course with data:", formData);
       const courseResponse = await fetch("/api/course/", {
         method: "POST",
