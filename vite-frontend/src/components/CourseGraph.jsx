@@ -10,6 +10,10 @@ function CourseGraph() {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [takenCourses, setTakenCourses] = useState([]);
+  const [remainingCourses, setRemainingCourses] = useState([]);
+  const [lockedCourses, setLockedCourses] = useState([]);
+
 
   // Fetch departments and initial graph data on component mount
   useEffect(() => {
@@ -31,6 +35,21 @@ function CourseGraph() {
         // Fetch initial graph data regardless of department fetch result
         fetchGraphData('all');
       });
+
+      // Fetch student progress
+    fetch('http://localhost:8000/api/student-progress/1/', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        setTakenCourses(data.taken);
+        setRemainingCourses(data.remaining);
+        setLockedCourses(data.locked);
+      })
+    .catch(err => console.error("Failed to fetch student progress:", err));
+
   }, []);
 
   // Fetch graph data when selected department changes

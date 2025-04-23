@@ -1,14 +1,14 @@
 from django.db.models import Q
 from django.db import models
 from rest_framework import viewsets, generics, status, mixins
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .models import (Department, DegreeProgram, Course, Textbook, 
                     Section, Student, Graduate, Undergraduate, 
-                    Professor, Employee, Section,
+                    Professor, Employee, Section, HasTaken,
                     AdminStaff, TeachingStaff, Specialization, HasAsPreq, HasAsAntireq)
 from .serializers import (DepartmentSerializer, DegreeProgramSerializer, 
                          CourseSerializer, SectionSerializer,
@@ -448,3 +448,45 @@ class SecureExampleView(APIView):
 
     def get(self, request):
         return Response({"message": "You are authenticated!"})
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def student_progress(request, student_id):
+    taken_courses = HasTaken.objects.filter(student_id=student_id).values_list('SCourse_code', flat=True)
+
+    all_courses = Course.objects.all()
+    prereq_map = {
+        course.Course_code: list(
+            HasAsPreq.objects.filter(Course_code=course.Course_code).values_list('Prereq_code', flat=True)
+        )
+        for course in all_courses
+    }
+
+    graph = []
+    taken_set = set(taken_courses)
+
+    for course in all_courses:
+        graph.append({
+            "code": course.Course_code,
+            "prereqs": prereq_map[course.Course_code]
+        })
+
+    remaining = []
+    locked = []
+
+    for course in all_courses:
+        if course.Course_code in taken_set:
+            continue
+
+        prereqs = prereq_map[course.Course_code]
+        if all(prereq in taken_set for prereq in prereqs):
+            remaining.append(course.Course_code)
+        else:
+            locked.append(course.Course_code)
+
+    return Response({
+        "taken": list(taken_set),
+        "remaining": remaining,
+        "locked": locked,
+        "graph": graph
+    })
