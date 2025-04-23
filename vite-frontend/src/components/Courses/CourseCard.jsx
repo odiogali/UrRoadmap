@@ -11,14 +11,6 @@ function CourseCard({ course }) {
         <strong>Textbook:</strong> {course.textbook}
       </p>
 
-      {course.prerequisites && course.prerequisites.length > 0 ? (
-        <div className="prereqs">
-          <strong>Prerequisites:</strong> {course.prerequisites.join(", ")}
-        </div>
-      ) : (
-        <p className="prereqs">No prerequisites</p>
-      )}
-
       <p className="instructor">
         <strong>Instructor:</strong> {course.instructor}
       </p>

@@ -10,6 +10,11 @@ export default function CourseForm() {
     prof: "",
     prerequisites: [],
     antirequisites: [],
+    section: {
+      semester: "",
+      instructor: "",
+      s_id: 1, // or you can generate this on the backend
+    }
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,7 +102,7 @@ export default function CourseForm() {
     setErrors({});
 
     try {
-      // Create the course
+      // 1. Create the course
       const courseResponse = await fetch("/api/course/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,13 +111,26 @@ export default function CourseForm() {
           course_title: formData.course_title,
           textbook_isbn: formData.textbook_isbn || null,
           dno: formData.dno,
-          prof: formData.prof,
         }),
       });
 
       if (!courseResponse.ok) throw new Error("Failed to create course");
 
-      // Add prerequisites
+      // 2. Create the initial section for the course
+      const sectionResponse = await fetch("/api/sections/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scourse_code: formData.course_code,
+          s_id: formData.section.s_id, // or generate on backend
+          semester: formData.section.semester || "Fall", // default/fixed or form input
+          instructor: formData.prof, // link professor here
+        }),
+      });
+
+      if (!sectionResponse.ok) throw new Error("Failed to create section");
+
+      // 3. Add prerequisites
       for (const prereq of formData.prerequisites) {
         await fetch("/api/prerequisites/create/", {
           method: "POST",
@@ -124,7 +142,7 @@ export default function CourseForm() {
         });
       }
 
-      // Add antirequisites
+      // 4. Add antirequisites
       for (const antireq of formData.antirequisites) {
         await fetch("/api/antirequisites/create/", {
           method: "POST",
@@ -136,7 +154,7 @@ export default function CourseForm() {
         });
       }
 
-      alert("Course added with prerequisites and antirequisites!");
+      alert("Course and section successfully added!");
       setFormData({
         course_code: "",
         course_title: "",
@@ -145,6 +163,11 @@ export default function CourseForm() {
         prof: "",
         prerequisites: [],
         antirequisites: [],
+        section: {
+          semester: "",
+          instructor: "",
+          s_id: 1,
+        },
       });
     } catch (error) {
       console.error("Error:", error);
