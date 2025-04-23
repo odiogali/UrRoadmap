@@ -278,13 +278,42 @@ class CourseProgressionView(generics.ListAPIView):
 class GraduateListView(generics.ListCreateAPIView):
     queryset = Graduate.objects.all()
     serializer_class = GraduateSerializer
-    
+
     def get_queryset(self):
         queryset = Graduate.objects.all()
         research_area = self.request.query_params.get('research_area')
         if research_area:
             queryset = queryset.filter(research_area__icontains=research_area)
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        make_teaching_staff = request.data.get('make_teaching_staff', False)
+        fname = request.data.get('fname')
+        lname = request.data.get('lname')
+
+        # Remove custom flags before passing to serializer
+        data = request.data.copy()
+        data.pop('make_teaching_staff', None)
+        data.pop('fname', None)
+        data.pop('lname', None)
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        graduate = serializer.save()
+
+        # Handle optional teaching staff creation
+        if make_teaching_staff and fname and lname:
+            employee = Employee.objects.create(
+                fname=fname,
+                lname=lname,
+                salary=0,  # default or customize
+                dno=None   # default or pass this too
+            )
+            teaching_staff = TeachingStaff.objects.create(employee=employee)
+            graduate.teaching = teaching_staff
+            graduate.save()
+
+        return Response(self.get_serializer(graduate).data, status=status.HTTP_201_CREATED)
 
 class UndergraduateListView(generics.ListCreateAPIView):
     queryset = Undergraduate.objects.all()

@@ -236,16 +236,13 @@ class StudentSerializer(serializers.ModelSerializer):
             return None
     
 class GraduateSerializer(serializers.ModelSerializer):
-    student_id = serializers.SerializerMethodField()
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     fname = serializers.SerializerMethodField()
     lname = serializers.SerializerMethodField()
 
     class Meta:
         model = Graduate
-        fields = ['student_id', 'fname', 'lname', 'research_area', 'thesis_title', 'teaching']
-
-    def get_student_id(self, obj):
-        return obj.student.student_id
+        fields = ['student', 'fname', 'lname', 'research_area', 'thesis_title', 'teaching']
 
     def get_fname(self, obj):
         return obj.student.fname
