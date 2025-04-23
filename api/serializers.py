@@ -74,7 +74,7 @@ class SimpleTeachingStaffSerializer(serializers.ModelSerializer):
         fields = ['employee']
 
 class TeachingStaffSerializer(serializers.ModelSerializer):
-    employee = EmployeeSerializer(read_only=True)
+    employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
     professor_details = serializers.SerializerMethodField()
     graduate_students = serializers.SerializerMethodField()
     
@@ -85,7 +85,7 @@ class TeachingStaffSerializer(serializers.ModelSerializer):
     def get_professor_details(self, obj):
         try:
             professor = Professor.objects.get(teaching=obj)
-            return SimpleProfessorSerializer(professor).data  # 👈 use simple version
+            return SimpleProfessorSerializer(professor).data
         except Professor.DoesNotExist:
             return None
 
