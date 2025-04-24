@@ -27,7 +27,7 @@ export default function Textbooks() {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4 text-black">Textbook Registration</h2>
+      <h2 className="tab-section-title">Textbook Registration</h2>
 
       {message && (
         <p className="mb-4 p-2 rounded font-medium" style={{ color: "black", backgroundColor: "#f3f3f3" }}>
