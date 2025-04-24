@@ -5,6 +5,8 @@ import TabButton from "./components/TabButton";
 import StudentForms from "../Students/StudentForms";
 import CourseForm from "../Courses/CourseForm";
 import FacultyForms from "../Faculty/FacultyForms";
+import TextbookForm from "../Textbooks/TextbookForm";
+import Textbooks from "../Textbooks/Textbooks";
 
 // Main Dashboard Component
 export default function Dashboard() {
@@ -34,6 +36,12 @@ export default function Dashboard() {
           icon={<Users className="icon" />}
           label="Faculty"
         />
+        <TabButton
+          active={activeTab === "textbooks"}
+          onClick={() => setActiveTab("textbooks")}
+          icon={<BookOpen className="icon" />}
+          label="Textbooks"
+        />
       </div>
 
       {/* Tab Content */}
@@ -41,6 +49,7 @@ export default function Dashboard() {
         {activeTab === "students" && <StudentForms />}
         {activeTab === "courses" && <CourseForm />}
         {activeTab === "faculty" && <FacultyForms />}
+        {activeTab === "textbooks" && <Textbooks/>}
       </div>
     </div>
   );

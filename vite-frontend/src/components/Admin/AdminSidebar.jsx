@@ -25,6 +25,9 @@ function AdminSidebar() {
           <Link to="/admin/courses" className="nav-link">
             Manage Courses
           </Link>
+          <Link to="/admin/textbooks" className="block px-4 py-2 hover:bg-red-100">
+            Manage Textbooks
+          </Link>
           <Link to="/admin" className="nav-link">
             🏠 Dashboard
           </Link>

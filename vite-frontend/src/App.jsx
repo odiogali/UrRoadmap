@@ -2,7 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/Login/Login";
 import StudentDashboard from "./components/Student/StudentDashboard";
 import AdminDashboard from "./components/Admin/AdminDashboard";
+import Textbooks from './components/Admin/Textbooks/Textbooks';
 import ProtectedRoute from "./components/ProtectedRoute";
+import StudentView from "./components/Admin/StudentView";
+import CourseView from "./components/Admin/CourseView";
+import FacultyView from "./components/Admin/FacultyView";
+import Dashboard from "./components/Admin/Dashboard/Dashboard";
 
 function App() {
   return (
@@ -10,7 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
 
-        {/* Student Route (Protected) */}
+        {/* Student Routes (Protected) */}
         <Route
           path="/student/*"
           element={
@@ -20,15 +25,16 @@ function App() {
           }
         />
 
-        {/* Admin Route (Protected) */}
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
+        {/* Admin Routes (Protected) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<Dashboard />} />
+            <Route path="students" element={<StudentView />} />
+            <Route path="courses" element={<CourseView />} />
+            <Route path="faculty" element={<FacultyView />} />
+          </Route>
+          <Route path="/admin/textbooks" element={<Textbooks />} />
+        </Route>
       </Routes>
     </Router>
   );

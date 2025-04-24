@@ -284,7 +284,7 @@ def course_graph(request):
         "links": links
     })
 
-class TextbookViewSet(viewsets.ReadOnlyModelViewSet):
+class TextbookViewSet(viewsets.ModelViewSet):
     queryset = Textbook.objects.all()
     serializer_class = TextbookSerializer
 
