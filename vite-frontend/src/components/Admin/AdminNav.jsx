@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import "./AdminNav.css"; // You'll need to create this CSS file
+import "./AdminNav.css"; 
 
 function AdminNav() {
   const navigate = useNavigate();
@@ -29,6 +29,9 @@ function AdminNav() {
         </Link>
         <Link to="/admin/faculty" className="topbar-link">
           Faculty
+        </Link>
+        <Link to="/admin/textbook" className="topbar-link">
+          Textbooks
         </Link>
       </div>
 

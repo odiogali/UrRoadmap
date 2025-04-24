@@ -8,6 +8,7 @@ import StudentView from "./components/Admin/StudentView";
 import CourseView from "./components/Admin/CourseView";
 import FacultyView from "./components/Admin/FacultyView";
 import Dashboard from "./components/Admin/Dashboard/Dashboard";
+import TextbookView from "./components/Admin/TextbookView";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="students" element={<StudentView />} />
             <Route path="courses" element={<CourseView />} />
             <Route path="faculty" element={<FacultyView />} />
+            <Route path="textbook" element={<TextbookView />} />
           </Route>
           <Route path="/admin/textbooks" element={<Textbooks />} />
         </Route>
