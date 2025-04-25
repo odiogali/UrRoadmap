@@ -11,12 +11,14 @@ import Dashboard from "./components/Admin/Dashboard/Dashboard";
 import TextbookView from "./components/Admin/TextbookView";
 import Degrees from './components/Admin/Degrees/Degrees';
 import DegreeView from './components/Admin/DegreeView';
+import AdminLogin from "./components/Login/AdminLogin";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* Student Routes (Protected) */}
         <Route

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
-function Login() {
+function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -10,7 +10,7 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); 
+    setError("");
 
     try {
       const response = await fetch("http://localhost:8000/api/token/", {
@@ -30,11 +30,11 @@ function Login() {
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
 
-      
+      // Force admin redirect
       if (username === "admin") {
         navigate("/admin");
       } else {
-        navigate("/student");
+        setError("You are not authorized as an admin.");
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -46,16 +46,16 @@ function Login() {
     <div className="login-container">
       <div className="login-content">
         <h1 className="login-title">
-          <span className="logo-black">Your</span>
-          <span className="logo-red">Roadmap</span>
+          <span className="logo-black">Admin</span>
+          <span className="logo-red">Portal</span>
         </h1>
 
         <form className="login-form" onSubmit={handleLogin}>
-          <h2 style={{ color: "black" }}>Log In</h2>
+          <h2 style={{ color: "black" }}>Admin Login</h2>
           {error && <p style={{ color: "red" }}>{error}</p>}
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Admin Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -69,22 +69,19 @@ function Login() {
           />
           <button type="submit">Log In</button>
 
-          <div>
-            <p style={{ fontSize: "0.9rem", color: "black"}}>
-              Are you Admin?{" "}
-              <span
-                onClick={() => navigate("/admin-login")}
+          <p style={{ fontSize: "0.9rem", color: "black" }}>
+             Are you a Student?{" "}
+            <span
+                onClick={() => navigate("/")}
                 style={{ color: "#d6001c", cursor: "pointer", textDecoration: "underline" }}
-              >
-                Go to Admin Login
-              </span>
-            </p>
-          </div>
-
+             >
+                Go to student login
+            </span>
+        </p>
         </form>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default AdminLogin;
