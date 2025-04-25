@@ -88,7 +88,7 @@ def get_prereqs(request, course_code):
                 WHERE hp.Course_code = %s
             """, [course_code])
             
-            result = [{'prereq_code': row[0]} for row in cursor.fetchall()]
+            result = [{'prereq_code': row[0], 'course_code': course_code} for row in cursor.fetchall()]
         
         return Response(result)
     except Exception as e:
@@ -129,26 +129,21 @@ def create_prereq(request):
 @api_view(['GET'])
 def get_antireqs(request, course_code):
     try:
-        # Get the Course object first
-        course = Course.objects.get(course_code=course_code)
-        
-        # Use a raw query that doesn't rely on the id field
         from django.db import connection
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT c.Course_code 
+                SELECT c.Course_code
                 FROM has_as_antireq ha
                 JOIN course c ON ha.Antireq_code = c.Course_code
                 WHERE ha.Course_code = %s
             """, [course_code])
-            
-            result = []
-            for row in cursor.fetchall():
-                result.append({'antireq_code': row[0]})
-        
+
+            result = [{'antireq_code': row[0], 'course_code': course_code} for row in cursor.fetchall()]
+
         return Response(result)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['POST'])
 def create_antireq(request):
