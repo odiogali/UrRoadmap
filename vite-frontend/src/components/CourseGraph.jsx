@@ -559,9 +559,21 @@ function CourseGraph() {
           setProfessorName('Not assigned');
           setIsLoading(false);
         }
-
-        // Rest of your useEffect for textbook remains the same
-        // ...
+        // Fetch textbook title if ISBN exists
+        if (node.textbook) {
+          fetch(`http://localhost:8000/api/textbook/${node.textbook}/`)
+            .then(res => res.json())
+            .then(data => {
+              setTextbookTitle(data.title);
+            })
+            .catch(err => {
+              console.error("Failed to fetch textbook data:", err);
+              setTextbookTitle('Unknown');
+            })
+            .finally(() => setIsLoading(false));
+        } else {
+          setTextbookTitle('None');
+        }
       }
     }, [node]);
 
