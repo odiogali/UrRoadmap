@@ -36,7 +36,7 @@ class SpecializationList(generics.ListCreateAPIView):
             queryset = queryset.filter(program__prog_name=program)
         return queryset
 
-class DegreeProgramViewSet(viewsets.ReadOnlyModelViewSet):
+class DegreeProgramViewSet(viewsets.ModelViewSet):
     queryset = DegreeProgram.objects.all()
     serializer_class = DegreeProgramSerializer
 

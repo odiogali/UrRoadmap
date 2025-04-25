@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, BookOpen, Users } from "lucide-react";
+import { User, BookOpen, Users, GraduationCap, Library } from "lucide-react";
 import "./Dashboard.css";
 import TabButton from "./components/TabButton";
 import StudentForms from "../Students/StudentForms";
@@ -7,6 +7,7 @@ import CourseForm from "../Courses/CourseForm";
 import FacultyForms from "../Faculty/FacultyForms";
 import TextbookForm from "../Textbooks/TextbookForm";
 import Textbooks from "../Textbooks/Textbooks";
+import Degrees from "../Degrees/Degrees";
 
 // Main Dashboard Component
 export default function Dashboard() {
@@ -39,9 +40,16 @@ export default function Dashboard() {
         <TabButton
           active={activeTab === "textbooks"}
           onClick={() => setActiveTab("textbooks")}
-          icon={<BookOpen className="icon" />}
+          icon={<Library className="icon" />}
           label="Textbooks"
         />
+        <TabButton
+          active={activeTab === "degrees"}
+          onClick={() => setActiveTab("degrees")}
+          icon={<GraduationCap className="icon" />}
+          label="Degrees"
+        />
+
       </div>
 
       {/* Tab Content */}
@@ -50,6 +58,7 @@ export default function Dashboard() {
         {activeTab === "courses" && <CourseForm />}
         {activeTab === "faculty" && <FacultyForms />}
         {activeTab === "textbooks" && <Textbooks/>}
+        {activeTab === "degrees" && <Degrees />}
       </div>
     </div>
   );

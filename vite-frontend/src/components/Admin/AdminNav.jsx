@@ -33,6 +33,9 @@ function AdminNav() {
         <Link to="/admin/textbook" className="topbar-link">
           Textbooks
         </Link>
+        <Link to="/admin/degree" className="topbar-link">
+          Degrees
+        </Link>
       </div>
 
       <div className="topbar-right">
