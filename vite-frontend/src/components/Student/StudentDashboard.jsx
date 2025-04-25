@@ -2,6 +2,7 @@ import StudentNav from "./StudentNav";
 import { Routes, Route } from "react-router-dom";
 import Courses from "../Courses/Courses";
 import CourseGraph from "../CourseGraph";
+import Progress from "./Progress";
 
 function StudentDashboard() {
   return (
@@ -21,6 +22,7 @@ function StudentDashboard() {
             }
           />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/progress" element={<Progress />} />
           {/* Add more routes as needed */}
         </Routes>
       </div>

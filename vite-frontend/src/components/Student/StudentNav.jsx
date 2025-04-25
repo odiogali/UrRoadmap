@@ -25,6 +25,10 @@ function StudentNav() {
         <Link to="/student/courses" className="topbar-link">
           Courses
         </Link>
+        <Link to="/student/progress" className="topbar-link">
+          Progress
+        </Link>
+
       </div>
 
       <div className="topbar-right">
