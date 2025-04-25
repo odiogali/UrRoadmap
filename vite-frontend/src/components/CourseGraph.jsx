@@ -10,9 +10,6 @@ function CourseGraph() {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [takenCourses, setTakenCourses] = useState([]);
-  const [remainingCourses, setRemainingCourses] = useState([]);
-  const [lockedCourses, setLockedCourses] = useState([]);
 
 
   // Fetch departments and initial graph data on component mount
@@ -534,9 +531,24 @@ function CourseGraph() {
         // Fetch professor name if professor ID exists
         if (node.professor) {
           fetch(`http://localhost:8000/api/teaching-staff/${node.professor}/`)
-            .then(res => res.json())
+            .then(res => {
+              if (!res.ok) throw new Error('Failed to fetch professor');
+              return res.json();
+            })
             .then(data => {
-              setProfessorName(`${data.employee.fname} ${data.employee.lname}`);
+              console.log("Professor data:", data);
+
+              // Handle the actual structure of your API response
+              if (data && data.professor_details && data.professor_details.employee) {
+                // For professor type
+                setProfessorName(`${data.professor_details.employee.fname} ${data.professor_details.employee.lname}`);
+              } else if (data && data.graduate_students && data.graduate_students.length > 0) {
+                // For graduate teaching assistant
+                const ta = data.graduate_students[0];
+                setProfessorName(`${ta.fname} ${ta.lname} (TA)`);
+              } else {
+                setProfessorName('Unknown');
+              }
             })
             .catch(err => {
               console.error("Failed to fetch professor data:", err);
@@ -545,8 +557,8 @@ function CourseGraph() {
             .finally(() => setIsLoading(false));
         } else {
           setProfessorName('Not assigned');
+          setIsLoading(false);
         }
-
         // Fetch textbook title if ISBN exists
         if (node.textbook) {
           fetch(`http://localhost:8000/api/textbook/${node.textbook}/`)
