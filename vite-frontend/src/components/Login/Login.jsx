@@ -32,7 +32,7 @@ function Login() {
 
       
       if (username === "admin") {
-        navigate("/admin");
+        setError("Use the Admin Login");
       } else {
         navigate("/student");
       }
