@@ -8,6 +8,7 @@ function StudentView() {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [studentType, setStudentType] = useState("all");
+  const [currentStudent, setCurrentStudent] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -26,6 +27,72 @@ function StudentView() {
       });
   }, [search, studentType]);
 
+  const handleEdit = (student) => {
+    setCurrentStudent(student);
+    setIsModalOpen(true);
+    // You would implement an edit modal/form here
+    console.log("Editing student:", student);
+  };
+
+  const handleDelete = (student) => {
+    // We need the full student object, not just the ID
+    if (window.confirm("Are you sure you want to delete this student?")) {
+      console.log("Deleting student:", student);
+
+      // Step 1: Determine student type and delete the specific record first
+      const studentType = student.type?.toLowerCase();
+
+      // Function to delete the main student record after the specific record is deleted
+      const deleteMainStudent = () => {
+        fetch(`http://localhost:8000/api/student/${student}/`, {
+          method: 'DELETE'
+        })
+          .then(() => {
+            setStudents(students.filter(s => s.student_id !== student));
+            console.log("Student deleted successfully");
+          })
+          .catch(err => {
+            console.error("Error deleting main student record:", err);
+            setError("Failed to delete student completely.");
+          });
+      };
+
+      // If it's an undergraduate or graduate student, delete the specific record first
+      if (studentType === "undergraduate") {
+        fetch(`http://localhost:8000/api/undergraduate/${student.student_id}/`, {
+          method: 'DELETE'
+        })
+          .then(() => {
+            console.log("Undergraduate record deleted successfully");
+            // Then delete the main student record
+            deleteMainStudent();
+          })
+          .catch(err => {
+            console.error("Error deleting undergraduate record:", err);
+            setError("Failed to delete undergraduate record.");
+          });
+      }
+      else if (studentType === "graduate") {
+        fetch(`http://localhost:8000/api/graduate/${student}/`, {
+          method: 'DELETE'
+        })
+          .then(() => {
+            console.log("Graduate record deleted successfully");
+            // Then delete the main student record
+            deleteMainStudent();
+          })
+          .catch(err => {
+            console.error("Error deleting graduate record:", err);
+            setError("Failed to delete graduate record.");
+          });
+      }
+      // If the type is unspecified or unknown, just delete the main student record
+      else {
+        deleteMainStudent();
+      }
+    }
+  };
+
   const renderTableHeader = () => {
     if (studentType === "undergraduate") {
       return (
@@ -37,6 +104,7 @@ function StudentView() {
           <th>Major</th>
           <th>Specialization</th>
           <th>Minor</th>
+          <th>Actions</th>
         </tr>
       );
     }
@@ -49,6 +117,7 @@ function StudentView() {
           <th>Last Name</th>
           <th>Research Area</th>
           <th>Thesis Title</th>
+          <th>Actions</th>
         </tr>
       );
     }
@@ -60,7 +129,27 @@ function StudentView() {
         <th>First Name</th>
         <th>Last Name</th>
         <th>Type</th>
+        <th>Actions</th>
       </tr>
+    );
+  };
+
+  const renderActionButtons = (student) => {
+    return (
+      <td className="action-buttons">
+        <button
+          className="edit-button"
+          onClick={() => handleEdit(student)}
+        >
+          Edit
+        </button>
+        <button
+          className="delete-button"
+          onClick={() => handleDelete(student.student_id)}
+        >
+          Delete
+        </button>
+      </td>
     );
   };
 
@@ -81,6 +170,7 @@ function StudentView() {
           <td>{student.major ?? "—"}</td>
           <td>{student.specialization ?? "—"}</td>
           <td>{student.minor ?? "—"}</td>
+          {renderActionButtons(student)}
         </tr>
       );
     }
@@ -91,6 +181,7 @@ function StudentView() {
           {baseCols}
           <td>{student.research_area ?? "—"}</td>
           <td>{student.thesis_title ?? "—"}</td>
+          {renderActionButtons(student)}
         </tr>
       );
     }
@@ -100,14 +191,15 @@ function StudentView() {
       <tr key={student.student_id}>
         {baseCols}
         <td>{student.type || "—"}</td>
+        {renderActionButtons(student)}
       </tr>
     );
   };
 
   const getColumnCount = () => {
-    if (studentType === "undergraduate") return 7;
-    if (studentType === "graduate") return 6;
-    return 4; // "all"
+    if (studentType === "undergraduate") return 8; // +1 for Actions column
+    if (studentType === "graduate") return 6; // +1 for Actions column
+    return 5; // "all" (+1 for Actions column)
   };
 
   return (
@@ -158,6 +250,35 @@ function StudentView() {
         </table>
       )}
 
+      {/* Add styling for the action buttons */}
+      <style>{`
+        .action-buttons {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .edit-button {
+          background-color: #f44336;
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        .delete-button {
+          background-color: #f44336;
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        .edit-button:hover, .delete-button:hover {
+          opacity: 0.8;
+        }
+      `}</style>
     </div>
   );
 }
