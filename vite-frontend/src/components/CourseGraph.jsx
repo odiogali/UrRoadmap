@@ -269,7 +269,6 @@ function CourseGraph() {
       return adjacencyList;
     }
 
-    // Find all connected nodes and edges using DFS
     // Find all prerequisite nodes using DFS (backwards traversal)
     function findPrerequisiteNodes(startNodeId) {
       const prerequisites = new Set();

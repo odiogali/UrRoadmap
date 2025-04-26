@@ -48,8 +48,6 @@ class SectionViewSet(viewsets.ModelViewSet):
     def by_course(self, request, course_code=None):
         """Get all sections for a specific course code"""
         if course_code:
-            # Use the proper field name from your model
-            # We need to use the exact field name as in the Section model
             sections = Section.objects.filter(scourse_code__course_code=course_code)
             serializer = self.get_serializer(sections, many=True)
             return Response(serializer.data)
@@ -321,14 +319,6 @@ class CourseProgressionView(generics.ListAPIView):
         
         if department_id:
             queryset = queryset.filter(department_id=department_id)
-        
-        # For degree program filtering, we'd need a more complex query
-        # This is a placeholder - you might need to implement a more sophisticated
-        # filter based on requirements for each degree program
-        if degree_program_id:
-            # This assumes you have a model or field connecting courses to degree programs
-            # which isn't in your current model setup
-            pass
         
         return queryset
 

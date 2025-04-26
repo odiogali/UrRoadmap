@@ -13,7 +13,7 @@ export default function CourseForm() {
     section: {
       semester: "",
       instructor: "",
-      s_id: 1, // or you can generate this on the backend
+      s_id: 1,
     }
   });
   const [errors, setErrors] = useState({});
