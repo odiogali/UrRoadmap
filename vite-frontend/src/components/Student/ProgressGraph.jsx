@@ -1,163 +1,175 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import * as dagreD3 from 'dagre-d3';
 
-export default function ProgressGraph({ takenCourses = [], allCourses = [], links = [] }) {
+export default function ProgressGraph({ selectedCourses }) {
   const ref = useRef();
+  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (!allCourses.length) return;
+    fetch('http://localhost:8000/api/graph/')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch graph data');
+        return res.json();
+      })
+      .then((data) => setGraphData(data))
+      .catch((err) => {
+        console.error('Failed to fetch graph data:', err);
+        setGraphData({ nodes: [], links: [] });
+      });
+  }, []);
 
-    const width = 1000;
-    const height = 700;
-    const nodeRadius = 25;
+  useEffect(() => {
+    if (graphData.nodes.length > 0 && selectedCourses.length > 0) {
+      drawGraph(selectedCourses, graphData);
+    } else {
+      clearGraph();
+    }
+  }, [selectedCourses, graphData]);
+
+  const clearGraph = () => {
     const svg = d3.select(ref.current);
     svg.selectAll('*').remove();
+  };
 
-    svg
-      .attr('width', width)
-      .attr('height', height)
-      .append('rect')
-      .attr('x', 5)
-      .attr('y', 5)
-      .attr('width', width - 10)
-      .attr('height', height - 10)
-      .attr('rx', 10)
-      .attr('ry', 10)
-      .attr('fill', 'none')
-      .attr('stroke', '#aaa')
-      .attr('stroke-width', 2);
+  const drawGraph = (selected, data) => {
+    const svg = d3.select(ref.current);
+    svg.selectAll('*').remove();
+    const width = 1850;
+    const height = 700;
+    svg.attr('width', width).attr('height', height);
 
-    const nodes = allCourses.map(course => ({
-      id: course.course_code,
-      title: course.course_title || '',
-    }));
+    const g = new dagreD3.graphlib.Graph().setGraph({
+      rankdir: 'LR',
+      marginx: 50,
+      marginy: 50,
+      ranksep: 150,
+      nodesep: 50,
+      edgesep: 10,
+      acyclicer: 'greedy',
+      ranker: 'network-simplex'
+    });
+    g.setDefaultEdgeLabel(() => ({}));
 
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    const selectedSet = new Set(selected);
+    const includedNodes = new Set();
+    const openClasses = new Set();
 
-    const validLinks = links.filter(link => nodeMap.has(link.source) && nodeMap.has(link.target));
-
-    const prereqLinks = validLinks.filter(l => l.type === 'prereq');
-    const antireqLinks = validLinks.filter(l => l.type === 'antireq');
-
-    // Reachability logic
-    const reachableSet = new Set(takenCourses);
-    const queue = [...takenCourses];
-
-    while (queue.length > 0) {
-      const current = queue.shift();
-      for (const link of prereqLinks) {
-        if (link.source === current && !reachableSet.has(link.target)) {
-          const allPre = prereqLinks.filter(l => l.target === link.target).map(l => l.source);
-          if (allPre.every(p => reachableSet.has(p))) {
-            reachableSet.add(link.target);
-            queue.push(link.target);
-          }
-        }
+    data.nodes.forEach((node) => {
+      if (selectedSet.has(node.id)) {
+        g.setNode(node.id, {
+          label: node.id,
+          shape: 'circle',
+          style: 'fill: #4caf50',
+          labelStyle: 'fill: #fff',
+          originalData: node
+        });
+        includedNodes.add(node.id);
       }
-    }
-
-    const nodeStatus = (node) => {
-      if (takenCourses.includes(node.id)) return 'completed';
-      if (antireqLinks.some(l => l.target === node.id && takenCourses.includes(l.source))) return 'blocked';
-      if (reachableSet.has(node.id)) return 'reachable';
-      return 'locked';
-    };
-
-    const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(validLinks).id(d => d.id).distance(150))
-      .force('charge', d3.forceManyBody().strength(-300))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(nodeRadius + 10));
-
-    // Arrowheads
-    svg.append("defs").append("marker")
-      .attr("id", "arrowhead")
-      .attr("viewBox", "0 -5 10 10")
-      .attr("refX", nodeRadius + 5)
-      .attr("refY", 0)
-      .attr("markerWidth", 6)
-      .attr("markerHeight", 6)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M0,-5L10,0L0,5")
-      .attr("fill", "#ccc");
-
-    const link = svg.append("g")
-      .selectAll("line")
-      .data(validLinks)
-      .enter()
-      .append("line")
-      .attr("stroke", d => d.type === 'antireq' ? '#9c27b0' : '#ccc')
-      .attr("stroke-dasharray", d => d.type === 'antireq' ? '4,2' : 'none')
-      .attr("stroke-width", 2)
-      .attr("marker-end", "url(#arrowhead)");
-
-    const nodeGroup = svg.append("g")
-      .selectAll("g")
-      .data(nodes)
-      .enter()
-      .append("g")
-      .call(d3.drag()
-        .on("start", dragStart)
-        .on("drag", dragged)
-        .on("end", dragEnd));
-
-    nodeGroup.append("circle")
-      .attr("r", nodeRadius)
-      .attr("fill", d => {
-        const status = nodeStatus(d);
-        if (status === 'completed') return '#4caf50';
-        if (status === 'reachable') return '#ffc107';
-        if (status === 'blocked') return '#f44336';
-        return '#607d8b'; // locked
-      });
-
-    nodeGroup.append("text")
-      .text(d => d.id)
-      .attr("fill", "#fff")
-      .attr("text-anchor", "middle")
-      .attr("dy", ".35em")
-      .attr("font-size", "10px");
-
-    simulation.on("tick", () => {
-      nodes.forEach(node => {
-        node.x = Math.max(nodeRadius, Math.min(width - nodeRadius, node.x));
-        node.y = Math.max(nodeRadius, Math.min(height - nodeRadius, node.y));
-      });
-
-      link
-        .attr("x1", d => nodeMap.get(d.source.id || d.source)?.x)
-        .attr("y1", d => nodeMap.get(d.source.id || d.source)?.y)
-        .attr("x2", d => nodeMap.get(d.target.id || d.target)?.x)
-        .attr("y2", d => nodeMap.get(d.target.id || d.target)?.y);
-
-      nodeGroup.attr("transform", d => `translate(${d.x},${d.y})`);
     });
 
-    function dragStart(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
+    data.links.forEach((link) => {
+      const source = typeof link.source === 'object' ? link.source.id : link.source;
+      const target = typeof link.target === 'object' ? link.target.id : link.target;
 
-    function dragged(event, d) {
-      d.fx = event.x;
-      d.fy = event.y;
-    }
+      if (selectedSet.has(target)) {
+        g.setNode(source, {
+          label: source,
+          shape: 'circle',
+          style: 'fill: #2196f3',
+          labelStyle: 'fill: #fff',
+          originalData: { id: source }
+        });
+        g.setEdge(source, target, {
+          style: 'stroke: #ffffff; stroke-width: 2px;',
+          arrowheadStyle: 'fill: #ffffff'
+        });
+        includedNodes.add(source);
+      } else if (selectedSet.has(source) && !selectedSet.has(target)) {
+        openClasses.add(target);
+        g.setNode(target, {
+          label: target,
+          shape: 'circle',
+          style: 'fill: #FFD700',
+          labelStyle: 'fill: #000',
+          originalData: { id: target }
+        });
+        g.setEdge(source, target, {
+          style: 'stroke: #FFD700; stroke-width: 2px;',
+          arrowheadStyle: 'fill: #FFD700'
+        });
+      }
+    });
 
-    function dragEnd(event, d) {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
-    }
+    const render = new dagreD3.render();
+    const svgGroup = svg.append('g');
+    render(svgGroup, g);
 
-    return () => simulation.stop();
+    const zoom = d3.zoom().on('zoom', (event) => svgGroup.attr('transform', event.transform));
+    svg.call(zoom);
+    svg.call(zoom.transform, d3.zoomIdentity.translate(100, 50).scale(0.8));
 
-  }, [takenCourses, allCourses, links]);
+    const nodeElements = svgGroup.selectAll('g.node');
+    nodeElements
+      .on('click', function (event, id) {
+        const nodeData = g.node(id).originalData;
+        setSelectedNode(nodeData);
+        setPopupPosition({ x: event.clientX, y: event.clientY });
+        event.stopPropagation();
+      });
+
+    svg.on('click', () => {
+      setSelectedNode(null);
+    });
+  };
+
+  const CoursePopup = ({ node, position, onClose }) => {
+    if (!node) return null;
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: position.y,
+          left: position.x,
+          background: 'white',
+          border: '1px solid #ccc',
+          padding: '12px',
+          borderRadius: '6px',
+          zIndex: 1000,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+        }}
+      >
+        <h4>{node.id}</h4>
+        <button onClick={onClose}>Close</button>
+      </div>
+    );
+  };
 
   return (
-    <div style={{ marginTop: "2rem" }}>
+    <div style={{ position: 'relative' }}>
+      {/* Legend */}
+      <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', paddingLeft: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#4caf50', border: '1px solid white' }}></div>
+          <span style={{ color: 'white' }}>Completed Course</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#2196f3', border: '1px solid white' }}></div>
+          <span style={{ color: 'white' }}>Required Prerequisite</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#FFD700', border: '1px solid white' }}></div>
+          <span style={{ color: 'white' }}>Prereqs are Met</span>
+        </div>
+      </div>
+
       <svg ref={ref}></svg>
+      {selectedNode && (
+        <CoursePopup node={selectedNode} position={popupPosition} onClose={() => setSelectedNode(null)} />
+      )}
     </div>
   );
 }
