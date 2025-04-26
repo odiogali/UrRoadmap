@@ -1,15 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FormField from "../Dashboard/components/FormField";
 
-// Admin Staff Form
 export default function AdminStaffForm() {
   const [formData, setFormData] = useState({
-    eid: "",
     fname: "",
     lname: "",
     salary: "",
     dno: "",
   });
+
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    async function fetchDepartments() {
+      try {
+        const response = await fetch("/api/department/"); // <-- Adjust endpoint if needed
+        if (response.ok) {
+          const data = await response.json();
+          setDepartments(data);
+        } else {
+          console.error("Failed to fetch departments");
+        }
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    }
+
+    fetchDepartments();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,44 +39,65 @@ export default function AdminStaffForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await fetch("/api/admin-staff/", {
+      // Step 1: Create the employee
+      const employeePayload = {
+        fname: formData.fname,
+        lname: formData.lname,
+        salary: parseInt(formData.salary),
+        dno: parseInt(formData.dno),
+      };
+
+      const employeeResponse = await fetch("/api/employees/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(employeePayload),
       });
 
-      if (response.ok) {
+      if (!employeeResponse.ok) {
+        const errData = await employeeResponse.json();
+        alert("Failed to create employee record: " + JSON.stringify(errData));
+        return;
+      }
+
+      const employeeData = await employeeResponse.json();
+      const employeeId = employeeData.eid;
+
+      console.log("Created Employee with ID:", employeeId);
+
+      // Step 2: Create admin staff linked to that employee
+      const adminResponse = await fetch("/api/admin-staff/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eid: employeeId }),
+      });
+
+      if (adminResponse.ok) {
         alert("Admin staff added successfully!");
         setFormData({
-          eid: "",
           fname: "",
           lname: "",
           salary: "",
           dno: "",
         });
       } else {
-        alert("Failed to add admin staff");
+        const adminErr = await adminResponse.json();
+        alert("Failed to create admin staff: " + JSON.stringify(adminErr));
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred while submitting the form");
+      alert("An unexpected error occurred");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Employee ID"
-          name="eid"
-          type="number"
-          value={formData.eid}
-          onChange={handleChange}
-          required
-        />
         <FormField
           label="First Name"
           name="fname"
@@ -83,13 +122,23 @@ export default function AdminStaffForm() {
           onChange={handleChange}
           required
         />
+
         <FormField
-          label="Department Number"
+          label="Department"
           name="dno"
-          type="number"
+          type="select"
           value={formData.dno}
           onChange={handleChange}
+          required
+          options={[
+            { value: "", label: "Select a department" },
+            ...departments.map((dept) => ({
+              value: dept.dno,
+              label: dept.dname,
+            })),
+          ]}
         />
+
       </div>
 
       <div className="pt-4">

@@ -61,6 +61,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 class AdminStaffSerializer(serializers.ModelSerializer):
     employee = EmployeeSerializer(read_only=True)  # Nested serializer
+    eid = serializers.PrimaryKeyRelatedField(
+        queryset=Employee.objects.all(), write_only=True, source='employee'
+    )
     
     class Meta:
         model = AdminStaff
@@ -101,11 +104,14 @@ class SimpleProfessorSerializer(serializers.ModelSerializer):
         fields = ['employee', 'research_area']
 
 class ProfessorSerializer(serializers.ModelSerializer):
-    teaching = SimpleTeachingStaffSerializer(read_only=True)
+    teaching_id = serializers.PrimaryKeyRelatedField(
+        queryset=TeachingStaff.objects.all(),
+        source='teaching'
+    )
 
     class Meta:
         model = Professor
-        fields = '__all__'
+        fields = ['teaching_id', 'research_area'] 
 
 class TextbookSerializer(serializers.ModelSerializer):
     class Meta:

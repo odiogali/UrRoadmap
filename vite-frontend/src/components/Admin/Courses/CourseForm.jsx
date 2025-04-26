@@ -37,7 +37,7 @@ export default function CourseForm() {
         setTextbooks(textbooksData);
 
         // Fetch professors
-        const professorsResponse = await fetch("/api/professors/");
+        const professorsResponse = await fetch("/api/teaching-staff/");
         const professorsData = await professorsResponse.json();
         setProfessors(professorsData);
 
@@ -192,10 +192,15 @@ export default function CourseForm() {
     ? [{ value: "", label: "Loading professors..." }]
     : [
       { value: "", label: "Select a professor" },
-      ...professors.map(p => ({
-        value: p.teaching?.employee?.eid,
-        label: `${p.teaching?.employee?.fname} ${p.teaching?.employee?.lname} (ID: ${p.teaching?.employee?.eid})`
-      }))
+      ...professors
+        .filter(p => p.professor_details !== null) // Only include professors
+        .map(p => {
+          const prof = p.professor_details.employee;
+          return {
+            value: prof.eid,
+            label: `${prof.fname} ${prof.lname} (ID: ${prof.eid})`
+          };
+        })
     ];
 
   const departmentOptions = isLoading

@@ -3,7 +3,6 @@ import FormField from "../Dashboard/components/FormField";
 
 export default function ProfessorForm() {
   const [formData, setFormData] = useState({
-    eid: "",
     fname: "",
     lname: "",
     salary: "",
@@ -20,7 +19,6 @@ export default function ProfessorForm() {
       try {
         const response = await fetch("/api/department");
         const data = await response.json();
-        console.log(data)
         setDepartments(data);
       } catch (error) {
         console.error("Failed to fetch departments:", error);
@@ -44,38 +42,98 @@ export default function ProfessorForm() {
     setError("");
     setSuccess(false);
 
-    const payload = {
-      teaching: {
-        employee: {
-          eid: parseInt(formData.eid),
-          fname: formData.fname,
-          lname: formData.lname,
-          salary: parseInt(formData.salary),
-          dno: parseInt(formData.dno),
-        },
-      },
-      research_area: formData.research_area,
-    };
-
     try {
-      const response = await fetch("/api/professors/", {
+      // Step 1: Create the employee without specifying an ID
+      const employeePayload = {
+        fname: formData.fname,
+        lname: formData.lname,
+        salary: parseInt(formData.salary),
+        dno: parseInt(formData.dno),
+      };
+
+      const employeeResponse = await fetch("/api/employees/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(employeePayload),
       });
 
-      if (!response.ok) {
-        const errData = await response.json();
+      if (!employeeResponse.ok) {
+        const errData = await employeeResponse.json();
+        setError("Failed to create employee record: " + JSON.stringify(errData));
+        return;
+      }
+
+      // Get the auto-generated employee ID from the response
+      const employeeData = await employeeResponse.json();
+      const employeeId = employeeData.eid;
+      console.log(employeeId)
+
+      // Step 2: Check if teaching staff exists, if not create it
+      let teachingStaffExists = false;
+      let teachingStaffId = null;
+
+      try {
+        const teachingResponse = await fetch(`/api/teaching-staff/`);
+        const teachingData = await teachingResponse.json();
+        const existingTeachingStaff = teachingData.find(ts => ts.employee === employeeId);
+
+        if (existingTeachingStaff) {
+          teachingStaffExists = true;
+          teachingStaffId = existingTeachingStaff.id;
+        }
+      } catch (err) {
+        console.log("Error checking teaching staff:", err);
+      }
+
+      if (!teachingStaffExists) {
+        const teachingPayload = {
+          employee: employeeId
+        };
+
+        const createTeachingResponse = await fetch("/api/teaching-staff/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(teachingPayload),
+        });
+
+        if (!createTeachingResponse.ok) {
+          const errData = await createTeachingResponse.json();
+          console.error("Failed to create teaching staff:", errData);
+          setError("Failed to create teaching staff: " + JSON.stringify(errData));
+          return;
+        }
+
+        const newTeachingData = await createTeachingResponse.json();
+        teachingStaffId = newTeachingData.employee;  // This should be the EID
+      }
+
+      // Step 3: Create the professor with the teaching staff ID
+      const professorPayload = {
+        teaching_id: teachingStaffId,
+        research_area: formData.research_area,
+      };
+
+      const professorResponse = await fetch("/api/professors/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(professorPayload),
+      });
+
+      if (!professorResponse.ok) {
+        const errData = await professorResponse.json();
         console.error("Failed to create professor:", errData);
-        setError("Failed to add professor");
+        setError("Failed to add professor: " + JSON.stringify(errData));
         return;
       }
 
       setSuccess(true);
       setFormData({
-        eid: "",
         fname: "",
         lname: "",
         salary: "",
@@ -84,7 +142,7 @@ export default function ProfessorForm() {
       });
     } catch (err) {
       console.error("Error submitting professor:", err);
-      setError("An error occurred while submitting the form");
+      setError("An error occurred while submitting the form: " + err.message);
     }
   };
 
@@ -97,14 +155,6 @@ export default function ProfessorForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            label="Employee ID"
-            name="eid"
-            type="number"
-            value={formData.eid}
-            onChange={handleChange}
-            required
-          />
           <FormField
             label="First Name"
             name="fname"
@@ -142,7 +192,7 @@ export default function ProfessorForm() {
               { value: "", label: "Select a department" },
               ...departments.map((dept) => ({
                 value: dept.dno,
-                label: dept.department_name,
+                label: dept.dname,
               })),
             ]}
           />
