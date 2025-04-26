@@ -121,8 +121,10 @@ Click on the link that comes up in your terminal
 
 - Navigate to the Django Admin Panel at `http://localhost:8000/admin`
 - Log in with the superuser credentials
-- Find the **Student** model
-- Click **Add Student** and fill out the fields
+- Find the **Users** tab
+- Click the **+** sign and fill out the fields
+- Add view permissions under API
+- Now you can login to the student portal
 
 ---
 
