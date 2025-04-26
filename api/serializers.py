@@ -77,7 +77,7 @@ class SimpleTeachingStaffSerializer(serializers.ModelSerializer):
         fields = ['employee']
 
 class TeachingStaffSerializer(serializers.ModelSerializer):
-    employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
+    employee = EmployeeSerializer(read_only=True)
     professor_details = serializers.SerializerMethodField()
     graduate_students = serializers.SerializerMethodField()
     
@@ -149,13 +149,19 @@ class SectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Section
-        fields = ['id', 'scourse_code', 's_id', 'semester', 'instructor', 'instructor_name']
+        fields = ['scourse_code', 's_id', 'semester', 'instructor', 'instructor_name']
+        read_only_fields = ['s_id']  
+
+    def create(self, validated_data):
+        if 's_id' not in validated_data:
+            last_section = Section.objects.filter(scourse_code=validated_data['scourse_code']).order_by('-s_id').first()
+            next_id = (last_section.s_id + 1) if last_section else 1
+            validated_data['s_id'] = next_id
+        return super().create(validated_data)
 
     def get_instructor_name(self, obj):
         if obj.instructor and obj.instructor.employee:
-            first = obj.instructor.employee.fname
-            last = obj.instructor.employee.lname
-            return f"{first} {last}"
+            return f"{obj.instructor.employee.fname} {obj.instructor.employee.lname}"
         return None
 
 

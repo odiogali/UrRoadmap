@@ -28,9 +28,11 @@ function Courses() {
                 `http://localhost:8000/api/sections/by-course/${course.course_code}/`
               );
               // Extract instructor_name from each object
-              profName = [...new Set(
-                secRes.data.map(section => section.instructor_name)
-              )].join(', ');
+              profName = [
+                ...new Set(
+                  secRes.data.map((section) => section.instructor_name)
+                ),
+              ].join(", ");
             } catch (err) {
               console.warn(`Prof for ${course.course_code} not found`);
             }
@@ -83,12 +85,11 @@ function Courses() {
       });
   }, []);
 
-  // Function to fetch sections for a specific course
   const fetchSectionsForCourse = async (courseCode) => {
     try {
       setLoadingSections(true);
       const response = await axios.get(
-        `http://localhost:8000/api/sections/course/${courseCode}/`
+        `http://localhost:8000/api/sections/by-course/${courseCode}/`
       );
       setCourseSections(response.data);
       setLoadingSections(false);
@@ -127,7 +128,9 @@ function Courses() {
           <button onClick={handleBackToCourses} className="back-button">
             &larr; Back to Courses
           </button>
-          <h2>{selectedCourse.code}: {selectedCourse.title} - Sections</h2>
+          <h2>
+            {selectedCourse.code}: {selectedCourse.title} - Sections
+          </h2>
 
           {loadingSections ? (
             <p>Loading sections...</p>
@@ -145,8 +148,12 @@ function Courses() {
                   {courseSections.map((section) => (
                     <tr key={section.s_id}>
                       <td>{section.s_id}</td>
-                      <td>{section.semester || 'N/A'}</td>
-                      <td>{section.instructor ? `${section.instructor}` : 'TBA'}</td>
+                      <td>{section.semester || "N/A"}</td>
+                      <td>
+                        {section.instructor_name
+                          ? section.instructor_name
+                          : "TBA"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -9,7 +9,7 @@ export default function FormField({
   onChange,
   required = false,
   options = null,
-  error = null
+  error = null,
 }) {
   // Common inline styles to ensure consistent dimensions across browsers
   const commonStyles = {
@@ -22,17 +22,18 @@ export default function FormField({
     color: "white",
     fontSize: "16px",
     boxSizing: "border-box",
-    outline: "none"
+    outline: "none",
   };
 
   // Style object specifically for select elements
   const selectStyles = {
     ...commonStyles,
     appearance: "none", // Remove default browser styling
-    backgroundImage: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 9l6 6 6-6\"/></svg>')",
+    backgroundImage:
+      'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>\')',
     backgroundRepeat: "no-repeat",
     backgroundPosition: "right 12px center",
-    paddingRight: "32px" // Extra padding for the arrow
+    paddingRight: "32px", // Extra padding for the arrow
   };
 
   if (type === "select" && options) {
@@ -45,7 +46,7 @@ export default function FormField({
             marginBottom: "8px",
             fontSize: "14px",
             fontWeight: "500",
-            color: "#333"
+            color: "#333",
           }}
         >
           {label} {required && <span style={{ color: "red" }}>*</span>}
@@ -58,13 +59,17 @@ export default function FormField({
           required={required}
           style={selectStyles}
         >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
+          {options.map((option, idx) => (
+            <option key={idx} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
-        {error && <p style={{ color: "red", fontSize: "14px", marginTop: "4px" }}>{error}</p>}
+        {error && (
+          <p style={{ color: "red", fontSize: "14px", marginTop: "4px" }}>
+            {error}
+          </p>
+        )}
       </div>
     );
   }
@@ -78,7 +83,7 @@ export default function FormField({
           marginBottom: "8px",
           fontSize: "14px",
           fontWeight: "500",
-          color: "#333"
+          color: "#333",
         }}
       >
         {label} {required && <span style={{ color: "red" }}>*</span>}
@@ -92,7 +97,11 @@ export default function FormField({
         required={required}
         style={commonStyles}
       />
-      {error && <p style={{ color: "red", fontSize: "14px", marginTop: "4px" }}>{error}</p>}
+      {error && (
+        <p style={{ color: "red", fontSize: "14px", marginTop: "4px" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

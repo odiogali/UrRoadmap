@@ -8,6 +8,7 @@ import FacultyForms from "../Faculty/FacultyForms";
 import TextbookForm from "../Textbooks/TextbookForm";
 import Textbooks from "../Textbooks/Textbooks";
 import Degrees from "../Degrees/Degrees";
+import SectionForm from "../Sections/SectionForm";
 
 // Main Dashboard Component
 export default function Dashboard() {
@@ -49,7 +50,12 @@ export default function Dashboard() {
           icon={<GraduationCap className="icon" />}
           label="Degrees"
         />
-
+        <TabButton
+          active={activeTab === "sections"}
+          onClick={() => setActiveTab("sections")}
+          icon={<Library className="icon" />} // or another icon
+          label="Sections"
+        />
       </div>
 
       {/* Tab Content */}
@@ -57,8 +63,9 @@ export default function Dashboard() {
         {activeTab === "students" && <StudentForms />}
         {activeTab === "courses" && <CourseForm />}
         {activeTab === "faculty" && <FacultyForms />}
-        {activeTab === "textbooks" && <Textbooks/>}
+        {activeTab === "textbooks" && <Textbooks />}
         {activeTab === "degrees" && <Degrees />}
+        {activeTab === "sections" && <SectionForm />}
       </div>
     </div>
   );

@@ -418,9 +418,15 @@ class ProfessorViewSet(viewsets.ModelViewSet):
     serializer_class = ProfessorSerializer
     lookup_field = 'teaching_id'  
 
+import logging
+logger = logging.getLogger(__name__)
 class TeachingStaffListView(generics.ListCreateAPIView):
     queryset = TeachingStaff.objects.all()
     serializer_class = TeachingStaffSerializer
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        logger.debug("TeachingStaff API Response: %s", response.data)
+        return response
     
     def get_queryset(self):
         queryset = TeachingStaff.objects.all()
