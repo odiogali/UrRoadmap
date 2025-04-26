@@ -163,24 +163,27 @@ function CourseGraph() {
     graph.links.forEach(link => {
       const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
       const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      // Add this to your edge settings when creating edges
       g.setEdge(sourceId, targetId, {
         curve: d3.curveBasis,
-        style: link.type === "prereq" ? "stroke: #ffffff; stroke-width: 2px;" : "stroke: #ff9c6e; stroke-width: 2px;",
+        style: link.type === "prereq"
+          ? "stroke: #ffffff; stroke-width: 2px; fill: none;"
+          : "stroke: #ff9c6e; stroke-width: 2px; fill: none;",
         arrowheadStyle: "fill: #ffffff",
         class: `edge source-${sourceId} target-${targetId}`,
         linkType: link.type,
-        originalData: link // Store original data for later use
+        originalData: link
       });
     });
 
     // Create SVG group for the graph
     const svgGroup = svg.append("g");
 
-    // Define arrowhead marker
+    // Define arrowhead marker with proper fill
     svg.append("defs").append("marker")
       .attr("id", "arrowhead")
       .attr("viewBox", "0 -5 10 10")
-      .attr("refX", nodeRadius) // Set to exactly the node radius
+      .attr("refX", nodeRadius + 2)
       .attr("refY", 0)
       .attr("orient", "auto")
       .attr("markerWidth", 6)
@@ -189,18 +192,18 @@ function CourseGraph() {
       .attr("d", "M 0,-5 L 10,0 L 0,5")
       .attr("fill", "#ffffff");
 
-    // Define highlighted arrowhead marker with different color
+    // Define highlighted arrowhead marker - identical to regular one except color
     svg.append("defs").append("marker")
       .attr("id", "arrowhead-highlight")
       .attr("viewBox", "0 -5 10 10")
-      .attr("refX", nodeRadius) // Match the value above
-      .attr("refY", 0)
+      .attr("refX", nodeRadius + 2) // Exactly the same as above
+      .attr("refY", 0)              // Exactly the same as above
       .attr("orient", "auto")
-      .attr("markerWidth", 6)
-      .attr("markerHeight", 6)
+      .attr("markerWidth", 6)       // Exactly the same as above
+      .attr("markerHeight", 6)      // Exactly the same as above
       .append("path")
-      .attr("d", "M 0,-5 L 10,0 L 0,5")
-      .attr("fill", "#ffff00");
+      .attr("d", "M 0,-5 L 10,0 L 0,5") // Exactly the same as above
+      .attr("fill", "#ffff00");         // Only the color changes
 
     // Run the renderer
     render(svgGroup, g);
@@ -400,8 +403,9 @@ function CourseGraph() {
             edge.classed("highlighted", true)
               .classed("dimmed", false);
 
-            // Update arrowhead marker
-            paths.attr("marker-end", "url(#arrowhead-highlight)");
+            // Instead of changing the marker-end reference completely, 
+            // just add a class to the edge for styling
+            edge.classed("highlight-arrow", true);
           }
         }
       });
@@ -411,13 +415,10 @@ function CourseGraph() {
       // Remove all highlighting and dimming classes
       nodeElements.classed("highlighted", false).classed("dimmed", false);
       edgeElements.classed("highlighted", false).classed("dimmed", false);
-
-      // Reset arrow markers
-      edgeElements.selectAll("path").attr("marker-end", "url(#arrowhead)");
+      edgeElements.classed("highlight-arrow", false);
     }
 
-    // Add CSS for highlighting and dimming
-    // Add CSS for highlighting and dimming
+    // Add this specific CSS selector to style edge paths without affecting arrowheads
     const style = document.createElement('style');
     style.textContent = `
       .node.highlighted rect,
@@ -429,6 +430,16 @@ function CourseGraph() {
       .node.dimmed rect,
       .node.dimmed circle {
         opacity: 0.3;
+      }
+      /* Style the path but not markers/arrowheads */
+      .edgePath path.path {
+        fill: none !important;
+        stroke-width: 2px;
+      }
+      /* Make sure arrowheads are filled */
+      marker#arrowhead path,
+      marker#arrowhead-highlight path {
+        fill: #ffffff !important;
       }
       .edgePath.highlighted path {
         stroke: #ff3b5c !important;
