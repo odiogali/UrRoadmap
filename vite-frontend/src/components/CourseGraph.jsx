@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import * as dagreD3 from 'dagre-d3';
 
 function CourseGraph() {
   const ref = useRef();
@@ -11,7 +12,6 @@ function CourseGraph() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-
   // Fetch departments and initial graph data on component mount
   useEffect(() => {
     // Fetch departments
@@ -21,7 +21,6 @@ function CourseGraph() {
         return res.json();
       })
       .then((data) => {
-        // console.log('Departments loaded:', data);
         setDepartments(data);
       })
       .catch(err => {
@@ -57,7 +56,6 @@ function CourseGraph() {
         return res.json();
       })
       .then((data) => {
-        // console.log('Graph data loaded:', data);
         setGraphData(data);
         // Check if the response has empty nodes array
         if (!data.nodes || data.nodes.length === 0) {
@@ -77,7 +75,6 @@ function CourseGraph() {
 
   const handleDepartmentChange = (event) => {
     const departmentId = event.target.value;
-    // console.log('Switching to department:', departmentId);
     setSelectedDepartment(departmentId);
   };
 
@@ -88,24 +85,21 @@ function CourseGraph() {
   }, [graphData, isLoading]);
 
   const drawGraph = (graph) => {
-    const width = 800;
-    const height = 600;
+    const width = 1850;
+    const height = 700;
     const nodeRadius = 35;
 
-    // Define bounds with padding equal to the node radius
-    const xBoundary = [nodeRadius, width - nodeRadius];
-    const yBoundary = [nodeRadius, height - nodeRadius];
+    // Clear existing content
+    const svg = d3.select(ref.current);
+    svg.selectAll("*").remove();
 
-    const svg = d3.select(ref.current)
+    // Set SVG dimensions
+    svg
       .attr("width", width)
       .attr("height", height);
 
-    // Clear existing content
-    svg.selectAll("*").remove();
-
     // Check for empty graph data explicitly
     if (!graph.nodes || graph.nodes.length === 0) {
-      // Get the currently selected department name for better messaging
       // Get the currently selected department name for better messaging
       const departmentName = selectedDepartment === 'all'
         ? 'any department'
@@ -132,101 +126,119 @@ function CourseGraph() {
       return;
     }
 
+    // Create a new dagre-d3 renderer
+    const render = new dagreD3.render();
+
+    // Create a new directed graph
+    const g = new dagreD3.graphlib.Graph().setGraph({
+      rankdir: "LR",  // Direction of graph layout (left to right)
+      marginx: 50,    // Margin in x-direction
+      marginy: 50,    // Margin in y-direction
+      ranksep: 150,   // Separation between ranks
+      nodesep: 50,    // Separation between nodes
+      edgesep: 10,    // Separation between edges
+      acyclicer: "greedy", // Optional: used to handle cycles in the graph
+      ranker: "network-simplex" // Algorithm for determining node positions
+    });
+
+    // Default to assign an edge to follow node paths
+    g.setDefaultEdgeLabel(() => ({}));
+
+    // Add nodes to the graph
+    graph.nodes.forEach(node => {
+      g.setNode(node.id, {
+        label: node.id,
+        width: nodeRadius * 2,
+        height: nodeRadius * 2,
+        rx: nodeRadius,
+        ry: nodeRadius,
+        shape: 'circle',
+        style: 'fill: #ff4d4f',
+        labelStyle: 'fill: #ffffff; font-size: 14px',
+        originalData: node // Store original data for later use
+      });
+    });
+
+    // Add edges to the graph
+    graph.links.forEach(link => {
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      g.setEdge(sourceId, targetId, {
+        curve: d3.curveBasis,
+        style: link.type === "prereq" ? "stroke: #ffffff; stroke-width: 2px;" : "stroke: #ff9c6e; stroke-width: 2px;",
+        arrowheadStyle: "fill: #ffffff",
+        class: `edge source-${sourceId} target-${targetId}`,
+        linkType: link.type,
+        originalData: link // Store original data for later use
+      });
+    });
+
+    // Create SVG group for the graph
+    const svgGroup = svg.append("g");
+
     // Define arrowhead marker
     svg.append("defs").append("marker")
       .attr("id", "arrowhead")
-      .attr("viewBox", "-0 -5 10 10")
-      .attr("refX", 40)
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", nodeRadius) // Set to exactly the node radius
       .attr("refY", 0)
       .attr("orient", "auto")
       .attr("markerWidth", 6)
       .attr("markerHeight", 6)
-      .attr("xoverflow", "visible")
-      .append("svg:path")
+      .append("path")
       .attr("d", "M 0,-5 L 10,0 L 0,5")
-      .attr("fill", "#ffffff")
-      .style("stroke", "none");
+      .attr("fill", "#ffffff");
 
     // Define highlighted arrowhead marker with different color
     svg.append("defs").append("marker")
       .attr("id", "arrowhead-highlight")
-      .attr("viewBox", "-0 -5 10 10")
-      .attr("refX", 40)
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", nodeRadius) // Match the value above
       .attr("refY", 0)
       .attr("orient", "auto")
       .attr("markerWidth", 6)
       .attr("markerHeight", 6)
-      .attr("xoverflow", "visible")
-      .append("svg:path")
+      .append("path")
       .attr("d", "M 0,-5 L 10,0 L 0,5")
-      .attr("fill", "#ffff00")
-      .style("stroke", "none");
+      .attr("fill", "#ffff00");
 
-    // Create simulation with forces
-    const simulation = d3.forceSimulation(graph.nodes)
-      .force("link", d3.forceLink(graph.links).id(d => d.id).distance(100))
-      .force("charge", d3.forceManyBody().strength(-200))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      // Add bounding box force
-      .force("x", d3.forceX(width / 2).strength(0.05))
-      .force("y", d3.forceY(height / 2).strength(0.05))
-      // Add collision detection to prevent node overlap
-      .force("collision", d3.forceCollide().radius(nodeRadius + 5));
+    // Run the renderer
+    render(svgGroup, g);
+
+    // Add zoom behavior
+    const zoom = d3.zoom()
+      .on("zoom", (event) => {
+        svgGroup.attr("transform", event.transform);
+      });
+    svg.call(zoom);
+
+    // Center the graph
+    const initialScale = 0.8;
+    const graphWidth = g.graph().width || width;
+    const graphHeight = g.graph().height || height;
+    const zoomX = (width - graphWidth * initialScale) / 2;
+    const zoomY = (height - graphHeight * initialScale) / 2;
+
+    svg.call(zoom.transform, d3.zoomIdentity
+      .translate(zoomX, zoomY)
+      .scale(initialScale));
 
     // Build adjacency list for graph traversal
     const adjacencyList = buildAdjacencyList(graph);
 
-    // Add links with arrowheads
-    const link = svg.append("g")
-      .selectAll("line")
-      .data(graph.links)
-      .enter().append("line")
-      .attr("stroke-width", 2)
-      .attr("stroke", d => d.type === "prereq" ? "#ffffff" : "#ff9c6e")
-      .attr("marker-end", "url(#arrowhead)")
-      .attr("class", d => {
-        const sourceId = typeof d.source === 'object' ? d.source.id : d.source;
-        const targetId = typeof d.target === 'object' ? d.target.id : d.target;
-        return `link source-${sourceId} target-${targetId}`;
-      });
+    // Select all node elements
+    const nodeElements = svgGroup.selectAll("g.node");
+    const edgeElements = svgGroup.selectAll("g.edgePath");
 
-    // Create node groups for better organization
-    const nodeGroup = svg.append("g")
-      .selectAll("g")
-      .data(graph.nodes)
-      .enter()
-      .append("g")
-      .attr("class", d => `node-group node-${d.id}`);
+    // Add hover and click events to nodes
+    let clickedNode = null;
 
-    // Add circles to node groups
-    const node = nodeGroup.append("circle")
-      .attr("r", nodeRadius)
-      .attr("fill", "#ff4d4f")
-      .attr("class", "node-circle")
-      .call(d3.drag()
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended));
-
-    // Add text labels to node groups
-    const label = nodeGroup.append("text")
-      .text(d => d.id)
-      .attr("fill", "#ffffff")
-      .attr("font-size", 14)
-      .attr("text-anchor", "middle")
-      .attr("dy", ".35em")
-      .attr("pointer-events", "none");
-
-    // Handle node highlighting on hover and click
-    nodeGroup
+    nodeElements
       .on("mouseover", handleNodeHover)
       .on("mouseout", handleNodeUnhover)
       .on("click", handleNodeClick);
 
-    // Keep track of click state
-    let clickedNode = null;
-
-    // Build adjacency list for the graph to enable DFS traversal
+    // Build adjacency list for the graph to enable traversal
     function buildAdjacencyList(graph) {
       const adjacencyList = {};
 
@@ -236,18 +248,18 @@ function CourseGraph() {
       });
 
       // Populate adjacency lists with bidirectional connections
-      graph.links.forEach(link => {
+      graph.links.forEach((link, index) => {
         const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
         const targetId = typeof link.target === 'object' ? link.target.id : link.target;
 
         // Add connections in both directions to find all connected nodes
         adjacencyList[sourceId].push({
           nodeId: targetId,
-          linkIndex: graph.links.indexOf(link)
+          linkIndex: index
         });
         adjacencyList[targetId].push({
           nodeId: sourceId,
-          linkIndex: graph.links.indexOf(link)
+          linkIndex: index
         });
       });
 
@@ -255,30 +267,39 @@ function CourseGraph() {
     }
 
     // Find all connected nodes and edges using DFS
-    function findConnectedNodes(startNodeId) {
-      const connectedNodes = new Set();
-      const connectedEdges = new Set();
+    // Find all prerequisite nodes using DFS (backwards traversal)
+    function findPrerequisiteNodes(startNodeId) {
+      const prerequisites = new Set();
+      const prerequisiteEdges = new Set();
       const visited = new Set();
 
-      function dfs(nodeId) {
+      function dfsBackwards(nodeId) {
         if (visited.has(nodeId)) return;
 
         visited.add(nodeId);
-        connectedNodes.add(nodeId);
+        prerequisites.add(nodeId);
 
-        // Visit all neighbors
-        adjacencyList[nodeId].forEach(neighbor => {
-          connectedEdges.add(neighbor.linkIndex);
-          dfs(neighbor.nodeId);
+        // Find all prerequisite edges (only go backwards through prereq links)
+        graph.links.forEach((link, index) => {
+          const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+          const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+          // Only follow prerequisite links (type === "prereq")
+          if (link.type === "prereq" && targetId === nodeId) {
+            // This is a prerequisite relationship where sourceId is a prerequisite for nodeId
+            prerequisiteEdges.add(index);
+            // Continue recursion to this prerequisite's prerequisites
+            dfsBackwards(sourceId);
+          }
         });
       }
 
       // Start DFS from the given node
-      dfs(startNodeId);
+      dfsBackwards(startNodeId);
 
       return {
-        nodes: connectedNodes,
-        edges: connectedEdges
+        nodes: prerequisites,
+        edges: prerequisiteEdges
       };
     }
 
@@ -286,7 +307,8 @@ function CourseGraph() {
       // Skip hover effect if a node is already clicked
       if (clickedNode) return;
 
-      highlightConnections(d);
+      const nodeId = d;
+      highlightConnections(nodeId);
     }
 
     function handleNodeUnhover(event, d) {
@@ -297,34 +319,30 @@ function CourseGraph() {
     }
 
     function handleNodeClick(event, d) {
+      const nodeId = d;
+
       // If clicking the same node, reset
-      if (clickedNode === d.id) {
+      if (clickedNode === nodeId) {
         clickedNode = null;
         resetHighlighting();
         setSelectedNode(null); // Close the popup
       } else {
-        clickedNode = d.id;
-        highlightConnections(d);
+        clickedNode = nodeId;
+        highlightConnections(nodeId);
 
-        // Find the full node data from graphData
-        const fullNodeData = graphData.nodes.find(node => node.id === d.id);
-        console.log("Full node data for popup:", fullNodeData);
-
-        // If d3 has modified the structure, reconstruct the node data
-        const nodeForPopup = {
-          ...d,  // Include all D3 properties like x, y
-          ...fullNodeData  // Overlay with full API data
-        };
-
-        console.log("Combined node data for popup:", nodeForPopup);
+        // Find the original node data
+        const nodeData = g.node(nodeId).originalData;
 
         // Set the selected node data for the popup
-        setSelectedNode(nodeForPopup);
+        setSelectedNode(nodeData);
 
-        // Calculate popup position based on node position
+        // Use the actual click event coordinates for positioning
+        const svgRect = svg.node().getBoundingClientRect();
+
+        // Set popup position based on click event coordinates
         setPopupPosition({
-          x: d.x,
-          y: d.y
+          x: event.clientX, // Use the mouse x position
+          y: event.clientY  // Use the mouse y position
         });
       }
 
@@ -341,177 +359,83 @@ function CourseGraph() {
       }
     });
 
-    function highlightConnections(d) {
-      // Find all connected nodes and edges using DFS
-      const connected = findConnectedNodes(d.id);
+    function highlightConnections(nodeId) {
+      // Find all prerequisite nodes and edges using recursive backwards traversal
+      const prerequisites = findPrerequisiteNodes(nodeId);
 
-      // Dim all nodes and links first
-      nodeGroup.classed("dimmed", true);
-      link.classed("dimmed", true);
+      // Dim all nodes and edges first
+      nodeElements.classed("dimmed", true);
+      edgeElements.classed("dimmed", true);
 
-      // Highlight the connected nodes
-      nodeGroup.filter(node => connected.nodes.has(node.id))
+      // Highlight the selected node itself
+      nodeElements.filter(function() {
+        const id = d3.select(this).datum();
+        return id === nodeId || prerequisites.nodes.has(id);
+      })
         .classed("highlighted", true)
         .classed("dimmed", false);
 
-      // Highlight the connected links
-      link.each(function(l, i) {
-        if (connected.edges.has(i)) {
-          d3.select(this)
-            .classed("highlighted", true)
-            .classed("dimmed", false)
-            .attr("marker-end", "url(#arrowhead-highlight)");
+      // Highlight the prerequisite edges
+      edgeElements.each(function(d, i) {
+        const edge = d3.select(this);
+        const paths = edge.selectAll("path");
+
+        // Get the edge's source and target IDs from the edge's class
+        const edgeClass = edge.attr("class") || "";
+        const sourceMatch = /source-([^ ]+)/.exec(edgeClass);
+        const targetMatch = /target-([^ ]+)/.exec(edgeClass);
+
+        if (sourceMatch && targetMatch) {
+          const sourceId = sourceMatch[1];
+          const targetId = targetMatch[1];
+
+          // Check if this edge is part of the prerequisite edges
+          const linkIndex = graph.links.findIndex(link => {
+            const s = typeof link.source === 'object' ? link.source.id : link.source;
+            const t = typeof link.target === 'object' ? link.target.id : link.target;
+            return s === sourceId && t === targetId;
+          });
+
+          if (prerequisites.edges.has(linkIndex)) {
+            edge.classed("highlighted", true)
+              .classed("dimmed", false);
+
+            // Update arrowhead marker
+            paths.attr("marker-end", "url(#arrowhead-highlight)");
+          }
         }
       });
     }
 
     function resetHighlighting() {
       // Remove all highlighting and dimming classes
-      nodeGroup.classed("highlighted", false).classed("dimmed", false);
-      link.classed("highlighted", false).classed("dimmed", false)
-        .attr("marker-end", "url(#arrowhead)");
-    }
+      nodeElements.classed("highlighted", false).classed("dimmed", false);
+      edgeElements.classed("highlighted", false).classed("dimmed", false);
 
-    simulation.on("tick", () => {
-      // Constrain nodes to viewport boundaries
-      graph.nodes.forEach(node => {
-        node.x = Math.max(xBoundary[0], Math.min(xBoundary[1], node.x));
-        node.y = Math.max(yBoundary[0], Math.min(yBoundary[1], node.y));
-      });
-
-      link
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
-
-      nodeGroup.attr("transform", d => `translate(${d.x},${d.y})`);
-    });
-
-    function dragstarted(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
-
-    function dragged(event, d) {
-      // Constrain dragged node to viewport boundaries
-      d.fx = Math.max(xBoundary[0], Math.min(xBoundary[1], event.x));
-      d.fy = Math.max(yBoundary[0], Math.min(yBoundary[1], event.y));
-    }
-
-    function dragended(event, d) {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
+      // Reset arrow markers
+      edgeElements.selectAll("path").attr("marker-end", "url(#arrowhead)");
     }
 
     // Add CSS for highlighting and dimming
+    // Add CSS for highlighting and dimming
     const style = document.createElement('style');
     style.textContent = `
-      .node-group.highlighted .node-circle {
-        fill: #ff3b5c;
-        stroke: #ffffff;
-        stroke-width: 3px;
+      .node.highlighted rect,
+      .node.highlighted circle {
+        fill: #ff3b5c !important;
+        stroke: #ffffff !important;
+        stroke-width: 3px !important;
       }
-      .node-group.dimmed {
+      .node.dimmed rect,
+      .node.dimmed circle {
         opacity: 0.3;
       }
-      line.highlighted {
-        stroke: #ff3b5c;
-        stroke-width: 3px;
+      .edgePath.highlighted path {
+        stroke: #ff3b5c !important;
+        stroke-width: 3px !important;
       }
-      line.dimmed {
+      .edgePath.dimmed path {
         opacity: 0.2;
-      }
-      .course-popup {
-        position: absolute;
-        background-color: #fff;
-        border: 2px solid #ff4d4f;
-        border-radius: 8px;
-        padding: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-        max-width: 300px;
-        pointer-events: auto;
-      }
-      .course-popup h3 {
-        margin-top: 0;
-        color: #ff4d4f;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 6px;
-      }
-      .course-popup p {
-        margin: 6px 0;
-      }
-      .course-popup .close-btn {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        background: none;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        color: #666;
-      }
-      .course-popup .close-btn:hover {
-        color: #ff4d4f;
-      }
-      .department-selector-container {
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: 20px;
-        width: 100%;
-      }
-      .department-selector {
-        display: flex;
-        align-items: center;
-        background-color: rgba(45, 45, 45, 0.8);
-        padding: 8px 16px;
-        border-radius: 6px;
-      }
-      .department-selector label {
-        margin-right: 10px;
-        font-weight: bold;
-        color: #ffffff;
-      }
-      .department-selector select {
-        padding: 8px 12px;
-        border-radius: 4px;
-        border: 1px solid #444;
-        background-color: #333;
-        color: #ffffff;
-        font-size: 14px;
-        min-width: 180px;
-        outline: none;
-      }
-      .department-selector select:focus {
-        border-color: #ff4d4f;
-      }
-      .department-selector select option {
-        background-color: #333;
-        color: #ffffff;
-      }
-      .loading-indicator {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: #ffffff;
-        font-size: 18px;
-      }
-      .error-message {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: #ff4d4f;
-        font-size: 18px;
-        text-align: center;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 20px;
-        border-radius: 8px;
-        max-width: 80%;
       }
     `;
     document.head.appendChild(style);
@@ -536,8 +460,6 @@ function CourseGraph() {
               return res.json();
             })
             .then(data => {
-              console.log("Professor data:", data);
-
               // Handle the actual structure of your API response
               if (data && data.professor_details && data.professor_details.employee) {
                 // For professor type
@@ -578,10 +500,6 @@ function CourseGraph() {
     }, [node]);
 
     if (!node) return null;
-
-    // Log the node data for debugging
-    console.log("Popup rendering with node:", node);
-    console.log("Node properties:", Object.keys(node));
 
     // Calculate adjusted position to ensure popup stays within view
     const adjustedX = Math.min(position.x + 20, window.innerWidth - 320);
@@ -669,7 +587,7 @@ function CourseGraph() {
       </div>
 
       <svg ref={ref} width="800" height="600">
-        {/* Default viewBox will be set in drawGraph */}
+        {/* SVG content will be added by dagre-d3 */}
       </svg>
 
       {isLoading && (
@@ -687,6 +605,100 @@ function CourseGraph() {
           onClose={() => setSelectedNode(null)}
         />
       )}
+
+      <style>
+        {`
+          .department-selector-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            width: 100%;
+          }
+          .department-selector {
+            display: flex;
+            align-items: center;
+            background-color: rgba(45, 45, 45, 0.8);
+            padding: 8px 16px;
+            border-radius: 6px;
+          }
+          .department-selector label {
+            margin-right: 10px;
+            font-weight: bold;
+            color: #ffffff;
+          }
+          .department-selector select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #ffffff;
+            font-size: 14px;
+            min-width: 180px;
+            outline: none;
+          }
+          .department-selector select:focus {
+            border-color: #ff4d4f;
+          }
+          .department-selector select option {
+            background-color: #333;
+            color: #ffffff;
+          }
+          .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            font-size: 18px;
+          }
+          .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff4d4f;
+            font-size: 18px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 80%;
+          }
+          .course-popup {
+            position: absolute;
+            background-color: #fff;
+            border: 2px solid #ff4d4f;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 300px;
+            pointer-events: auto;
+          }
+          .course-popup h3 {
+            margin-top: 0;
+            color: #ff4d4f;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 6px;
+          }
+          .course-popup p {
+            margin: 6px 0;
+          }
+          .course-popup .close-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+          }
+          .course-popup .close-btn:hover {
+            color: #ff4d4f;
+          }
+        `}
+      </style>
     </div>
   );
 }
